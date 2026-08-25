@@ -9,18 +9,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] }
-        }
-      }
-    }
-  </script>
-
-  <!-- Supabase JS CDN -->
+  <!-- Supabase JS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- HTML5 QR Code Scanner -->
   <script src="https://unpkg.com/html5-qrcode"></script>
@@ -28,11 +19,10 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
-    body { background-color: #0b0f19; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b0f19; }
     .glass-panel {
       background: rgba(17, 24, 39, 0.85);
       backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.08);
     }
     .glass-card {
@@ -67,9 +57,9 @@
       </div>
 
       <div class="flex items-center space-x-3">
-        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-          <span class="w-2 h-2 mr-2 rounded-full bg-emerald-400 animate-ping"></span>
-          Conectado a Base de Datos
+        <span id="db-status-badge" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+          <span class="w-2 h-2 mr-2 rounded-full bg-amber-400 animate-ping"></span>
+          Conectando...
         </span>
       </div>
     </div>
@@ -90,27 +80,27 @@
               Vincular o Modificar Placa
             </h3>
             <p class="text-xs text-slate-400 mt-1">
-              Acerca el teléfono al chip NFC, escanea el QR con la cámara o ingresa el serial.
+              Selecciona el método de identificación de la placa:
             </p>
           </div>
 
-          <!-- Selector de Modo de Detección -->
+          <!-- Selector de Modo -->
           <div class="grid grid-cols-3 gap-2 p-1.5 bg-slate-950/70 rounded-2xl border border-slate-800">
-            <button id="tab-nfc" onclick="switchTab('nfc')" class="tab-btn py-2.5 px-2 text-xs font-bold rounded-xl transition bg-sky-500 text-white flex flex-col items-center gap-1.5 shadow-md">
+            <button id="tab-nfc" type="button" onclick="window.switchTab('nfc')" class="tab-btn py-2.5 px-2 text-xs font-bold rounded-xl transition bg-sky-500 text-white flex flex-col items-center gap-1.5 shadow-md cursor-pointer">
               <i data-lucide="nfc" class="w-4 h-4"></i>
               Leer NFC
             </button>
-            <button id="tab-qr" onclick="switchTab('qr')" class="tab-btn py-2.5 px-2 text-xs font-bold rounded-xl transition text-slate-400 hover:text-white flex flex-col items-center gap-1.5">
+            <button id="tab-qr" type="button" onclick="window.switchTab('qr')" class="tab-btn py-2.5 px-2 text-xs font-bold rounded-xl transition text-slate-400 hover:text-white flex flex-col items-center gap-1.5 cursor-pointer">
               <i data-lucide="qr-code" class="w-4 h-4"></i>
               Cámara QR
             </button>
-            <button id="tab-serial" onclick="switchTab('serial')" class="tab-btn py-2.5 px-2 text-xs font-bold rounded-xl transition text-slate-400 hover:text-white flex flex-col items-center gap-1.5">
+            <button id="tab-serial" type="button" onclick="window.switchTab('serial')" class="tab-btn py-2.5 px-2 text-xs font-bold rounded-xl transition text-slate-400 hover:text-white flex flex-col items-center gap-1.5 cursor-pointer">
               <i data-lucide="hash" class="w-4 h-4"></i>
               Manual
             </button>
           </div>
 
-          <!-- Módulo NFC Activo -->
+          <!-- Bloque NFC -->
           <div id="nfc-scanner-container" class="bg-slate-950 p-6 rounded-2xl border border-slate-800 text-center space-y-3">
             <div class="relative w-16 h-16 mx-auto flex items-center justify-center">
               <div class="absolute inset-0 rounded-full bg-sky-500/20 nfc-ring"></div>
@@ -119,25 +109,25 @@
               </div>
             </div>
             <div>
-              <h4 class="font-bold text-sm text-slate-200">Sensor NFC Listo</h4>
+              <h4 class="font-bold text-sm text-slate-200">Sensor NFC</h4>
               <p class="text-xs text-slate-400 mt-1" id="nfc-status-text">Toca el botón y acerca la placa a la antena trasera de tu teléfono.</p>
             </div>
-            <button id="btn-nfc-start" type="button" onclick="iniciarLecturaNFC()" class="px-5 py-2.5 bg-sky-600 hover:bg-sky-500 rounded-xl text-xs font-bold text-white transition shadow-lg shadow-sky-600/25">
+            <button id="btn-nfc-start" type="button" onclick="window.iniciarLecturaNFC()" class="px-5 py-2.5 bg-sky-600 hover:bg-sky-500 rounded-xl text-xs font-bold text-white transition shadow-lg shadow-sky-600/25">
               Activar Lector NFC
             </button>
           </div>
 
-          <!-- Módulo Escáner QR -->
-          <div id="qr-scanner-container" class="hidden bg-slate-950 p-4 rounded-2xl border border-slate-800 text-center">
-            <div id="reader" class="w-full rounded-xl overflow-hidden mb-3 border border-slate-800"></div>
-            <p class="text-xs text-slate-400">Apunta la cámara al QR de la placa</p>
-            <button type="button" onclick="stopQrScanner()" class="mt-3 text-xs font-semibold text-rose-400 hover:text-rose-300">
+          <!-- Bloque Cámara QR -->
+          <div id="qr-scanner-container" class="hidden bg-slate-950 p-4 rounded-2xl border border-slate-800 text-center space-y-3">
+            <div id="reader" style="width: 100%; min-height: 250px; background: #000; border-radius: 0.75rem;" class="overflow-hidden"></div>
+            <p class="text-xs text-slate-400" id="qr-status-text">Apunta la cámara al código QR de la placa</p>
+            <button type="button" onclick="window.switchTab('serial')" class="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-rose-400 rounded-lg">
               Cerrar Cámara
             </button>
           </div>
 
           <!-- Formulario -->
-          <form id="plate-form" onsubmit="guardarPlaca(event)" class="space-y-4">
+          <form id="plate-form" onsubmit="window.guardarPlaca(event)" class="space-y-4">
             <div>
               <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
                 ID / Serial de la Placa
@@ -145,9 +135,8 @@
               <div class="relative">
                 <input type="text" id="plate-id" required placeholder="Ej. 546782876366" 
                   class="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl px-4 py-3 text-sm font-mono text-emerald-400 placeholder-slate-600 focus:outline-none focus:border-sky-500 transition pl-10"
-                  oninput="actualizarPreview(this.value)"
-                  onkeyup="actualizarPreview(this.value)"
-                  onpaste="setTimeout(() => actualizarPreview(this.value), 50)">
+                  oninput="window.actualizarPreview(this.value)"
+                  onkeyup="window.actualizarPreview(this.value)">
                 <i data-lucide="tag" class="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5"></i>
               </div>
               <p class="text-[11px] text-slate-400 mt-1.5">
@@ -171,13 +160,13 @@
                 class="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-sky-500 transition">
               
               <div class="flex flex-wrap gap-2 mt-2">
-                <button type="button" onclick="setPreset('https://g.page/r/tu-negocio/review')" class="text-[11px] font-semibold px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300">Google Reviews</button>
-                <button type="button" onclick="setPreset('https://instagram.com/tu_cuenta')" class="text-[11px] font-semibold px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300">Instagram</button>
-                <button type="button" onclick="setPreset('https://wa.me/5215500000000')" class="text-[11px] font-semibold px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300">WhatsApp</button>
+                <button type="button" onclick="window.setPreset('https://g.page/r/tu-negocio/review')" class="text-[11px] font-semibold px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300">Google Reviews</button>
+                <button type="button" onclick="window.setPreset('https://instagram.com/tu_cuenta')" class="text-[11px] font-semibold px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300">Instagram</button>
+                <button type="button" onclick="window.setPreset('https://wa.me/5215500000000')" class="text-[11px] font-semibold px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300">WhatsApp</button>
               </div>
             </div>
 
-            <button type="submit" id="btn-save" class="w-full bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-sky-500/25 text-sm mt-2">
+            <button type="submit" id="btn-save" class="w-full bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-sky-500/25 text-sm mt-2 cursor-pointer">
               <i data-lucide="save" class="w-4 h-4"></i>
               Guardar y Activar Redirección
             </button>
@@ -198,7 +187,7 @@
               </h3>
               <p class="text-xs text-slate-400 mt-0.5">Las redirecciones se actualizan en tiempo real</p>
             </div>
-            <button type="button" onclick="cargarPlacas()" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-slate-300 transition">
+            <button type="button" onclick="window.cargarPlacas()" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-slate-300 transition">
               <i data-lucide="refresh-cw" class="w-4 h-4"></i>
             </button>
           </div>
@@ -215,37 +204,144 @@
   </main>
 
   <script>
-    // 1. CONFIGURACIÓN DE SUPABASE
+    // 1. CONEXIÓN A SUPABASE (Envuelto en bloque seguro)
     const SUPABASE_URL = "https://tnfujiajzzicbzdoutvd.supabase.co";
     const SUPABASE_KEY = "sb_publishable_ePfSCkCTypFz7dSvRc3New_asdhyac0";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let supabase = null;
+
+    try {
+      if (window.supabase && typeof window.supabase.createClient === 'function') {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      }
+    } catch (e) {
+      console.error("Error al inicializar Supabase:", e);
+    }
 
     let html5QrCode = null;
 
-    // 2. FUNCIÓN DE LECTURA NFC
-    async function iniciarLecturaNFC() {
+    // 2. CAMBIO DE PESTAÑAS
+    window.switchTab = async function(tab) {
+      try {
+        const nfcBtn = document.getElementById('tab-nfc');
+        const qrBtn = document.getElementById('tab-qr');
+        const serialBtn = document.getElementById('tab-serial');
+        const nfcBox = document.getElementById('nfc-scanner-container');
+        const qrBox = document.getElementById('qr-scanner-container');
+
+        // Reset visual de botones
+        [nfcBtn, qrBtn, serialBtn].forEach(b => {
+          if (b) b.className = "tab-btn py-2.5 px-2 text-xs font-bold rounded-xl transition text-slate-400 hover:text-white flex flex-col items-center gap-1.5 cursor-pointer";
+        });
+
+        // Ocultar contenedores
+        if (nfcBox) nfcBox.classList.add('hidden');
+        if (qrBox) qrBox.classList.add('hidden');
+
+        // Parar cámara de forma segura
+        await window.stopQrScanner();
+
+        // Mostrar pestaña seleccionada
+        if (tab === 'nfc') {
+          if (nfcBtn) nfcBtn.className = "tab-btn py-2.5 px-2 text-xs font-bold rounded-xl transition bg-sky-500 text-white flex flex-col items-center gap-1.5 shadow-md cursor-pointer";
+          if (nfcBox) nfcBox.classList.remove('hidden');
+        } else if (tab === 'qr') {
+          if (qrBtn) qrBtn.className = "tab-btn py-2.5 px-2 text-xs font-bold rounded-xl transition bg-sky-500 text-white flex flex-col items-center gap-1.5 shadow-md cursor-pointer";
+          if (qrBox) qrBox.classList.remove('hidden');
+          // Iniciar cámara tras renderizar el contenedor
+          setTimeout(() => { window.startQrScanner(); }, 150);
+        } else if (tab === 'serial') {
+          if (serialBtn) serialBtn.className = "tab-btn py-2.5 px-2 text-xs font-bold rounded-xl transition bg-sky-500 text-white flex flex-col items-center gap-1.5 shadow-md cursor-pointer";
+        }
+
+        if (window.lucide) window.lucide.createIcons();
+      } catch (err) {
+        console.error("Error en switchTab:", err);
+      }
+    };
+
+    // 3. CONTROL DE CÁMARA QR
+    window.startQrScanner = async function() {
+      const statusEl = document.getElementById('qr-status-text');
+      try {
+        if (!window.Html5Qrcode) {
+          if (statusEl) statusEl.innerText = "Error: Librería de cámara no disponible.";
+          return;
+        }
+
+        if (!html5QrCode) {
+          html5QrCode = new Html5Qrcode("reader");
+        }
+
+        if (html5QrCode.isScanning) {
+          await html5QrCode.stop();
+        }
+
+        await html5QrCode.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 220, height: 220 } },
+          (decodedText) => {
+            let cleanId = decodedText;
+            if (decodedText.includes("id=")) {
+              try {
+                const urlObj = new URL(decodedText.startsWith('http') ? decodedText : 'https://' + decodedText);
+                cleanId = urlObj.searchParams.get('id') || decodedText;
+              } catch (e) {}
+            }
+            const input = document.getElementById('plate-id');
+            if (input) {
+              input.value = cleanId;
+              window.actualizarPreview(cleanId);
+            }
+            window.switchTab('serial');
+            window.buscarInfoExistente(cleanId);
+          },
+          () => {}
+        );
+        if (statusEl) statusEl.innerText = "Apunta la cámara al código QR de la placa";
+      } catch (e) {
+        console.warn("Error iniciando cámara:", e);
+        if (statusEl) statusEl.innerText = "Permiso de cámara denegado o no disponible.";
+      }
+    };
+
+    window.stopQrScanner = async function() {
+      if (html5QrCode) {
+        try {
+          if (html5QrCode.isScanning) {
+            await html5QrCode.stop();
+          }
+          await html5QrCode.clear();
+        } catch (e) {
+          console.warn("Error al detener cámara:", e);
+        }
+      }
+    };
+
+    // 4. LECTURA NFC
+    window.iniciarLecturaNFC = async function() {
       const statusText = document.getElementById('nfc-status-text');
       
       if ("NDEFReader" in window) {
         try {
           const ndef = new NDEFReader();
           await ndef.scan();
-          statusText.innerHTML = "<span class='text-emerald-400 font-semibold animate-pulse'>¡Escaneando! Acerca la placa a la antena trasera...</span>";
+          if (statusText) statusText.innerHTML = "<span class='text-emerald-400 font-semibold animate-pulse'>¡Escaneando! Acerca la placa al móvil...</span>";
 
           ndef.onreading = event => {
             let extractedId = "";
 
             if (event.message && event.message.records) {
               for (const record of event.message.records) {
-                const textDecoder = new TextDecoder(record.encoding || 'utf-8');
-                const contenido = textDecoder.decode(record.data);
-                
-                if (contenido.includes("id=")) {
-                  const urlObj = new URL(contenido.startsWith('http') ? contenido : 'https://' + contenido);
-                  extractedId = urlObj.searchParams.get('id');
-                } else if (contenido.length > 3) {
-                  extractedId = contenido.trim();
-                }
+                try {
+                  const textDecoder = new TextDecoder(record.encoding || 'utf-8');
+                  const contenido = textDecoder.decode(record.data);
+                  if (contenido.includes("id=")) {
+                    const urlObj = new URL(contenido.startsWith('http') ? contenido : 'https://' + contenido);
+                    extractedId = urlObj.searchParams.get('id');
+                  } else if (contenido.length > 3) {
+                    extractedId = contenido.trim();
+                  }
+                } catch (e) {}
               }
             }
 
@@ -254,142 +350,113 @@
             }
 
             if (extractedId) {
-              document.getElementById('plate-id').value = extractedId;
-              actualizarPreview(extractedId);
-              buscarInfoExistente(extractedId);
-              statusText.innerHTML = `<span class='text-emerald-400 font-bold'>✓ Placa detectada: ${extractedId}</span>`;
+              const input = document.getElementById('plate-id');
+              if (input) {
+                input.value = extractedId;
+                window.actualizarPreview(extractedId);
+              }
+              window.buscarInfoExistente(extractedId);
+              if (statusText) statusText.innerHTML = `<span class='text-emerald-400 font-bold'>✓ Placa detectada: ${extractedId}</span>`;
             }
           };
 
         } catch (error) {
-          statusText.innerHTML = `<span class='text-rose-400'>Error al abrir NFC: ${error.message}</span>`;
+          if (statusText) statusText.innerHTML = `<span class='text-rose-400'>Error NFC: ${error.message}</span>`;
         }
       } else {
-        statusText.innerHTML = "<span class='text-amber-400'>Web NFC requiere Chrome en Android con NFC activo. Usa 'Manual' o 'Cámara QR' si estás en una PC.</span>";
+        if (statusText) statusText.innerHTML = "<span class='text-amber-400'>Web NFC requiere Chrome en Android. En PC usa 'Manual' o 'Cámara QR'.</span>";
       }
-    }
+    };
 
-    // 3. FUNCIÓN ESCÁNER QR
-    function startQrScanner() {
-      if (!html5QrCode) {
-        html5QrCode = new Html5Qrcode("reader");
-      }
-      html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: 220 },
-        (decodedText) => {
-          let cleanId = decodedText;
-          if (decodedText.includes("id=")) {
-            const urlObj = new URL(decodedText.startsWith('http') ? decodedText : 'https://' + decodedText);
-            cleanId = urlObj.searchParams.get('id') || decodedText;
-          }
-          document.getElementById('plate-id').value = cleanId;
-          actualizarPreview(cleanId);
-          stopQrScanner();
-          switchTab('serial');
-          buscarInfoExistente(cleanId);
-        },
-        () => {}
-      ).catch(e => {
-        console.warn("Error cámara:", e);
-      });
-    }
-
-    function stopQrScanner() {
-      if (html5QrCode && html5QrCode.isScanning) {
-        html5QrCode.stop().then(() => html5QrCode.clear()).catch(e => console.log(e));
-      }
-    }
-
-    // 4. GESTIÓN DE PESTAÑAS
-    function switchTab(tab) {
-      document.querySelectorAll('.tab-btn').forEach(b => {
-        b.classList.remove('bg-sky-500', 'text-white', 'shadow-md');
-        b.classList.add('text-slate-400');
-      });
-
-      document.getElementById('qr-scanner-container').classList.add('hidden');
-      document.getElementById('nfc-scanner-container').classList.add('hidden');
-      stopQrScanner();
-
-      if (tab === 'nfc') {
-        document.getElementById('tab-nfc').classList.add('bg-sky-500', 'text-white', 'shadow-md');
-        document.getElementById('nfc-scanner-container').classList.remove('hidden');
-      } else if (tab === 'qr') {
-        document.getElementById('tab-qr').classList.add('bg-sky-500', 'text-white', 'shadow-md');
-        document.getElementById('qr-scanner-container').classList.remove('hidden');
-        startQrScanner();
-      } else if (tab === 'serial') {
-        document.getElementById('tab-serial').classList.add('bg-sky-500', 'text-white', 'shadow-md');
-      }
-      lucide.createIcons();
-    }
-
-    function actualizarPreview(val) {
+    // 5. UTILIDADES DE FORMULARIO
+    window.actualizarPreview = function(val) {
       const previewEl = document.getElementById('id-preview');
       if (previewEl) {
         previewEl.innerText = val && val.trim() !== '' ? val.trim() : '546782876366';
       }
-    }
+    };
 
-    function setPreset(url) {
-      document.getElementById('plate-url').value = url;
-    }
+    window.setPreset = function(url) {
+      const input = document.getElementById('plate-url');
+      if (input) input.value = url;
+    };
 
-    // 5. OPERACIONES CON SUPABASE
-    async function cargarPlacas() {
+    // 6. OPERACIONES DE BASE DE DATOS
+    window.cargarPlacas = async function() {
       const container = document.getElementById('plates-container');
+      const badge = document.getElementById('db-status-badge');
+
+      if (!supabase) {
+        if (container) container.innerHTML = `<div class="text-center py-8 text-rose-400 text-xs">Error: No se pudo conectar a Supabase. Revisa tus claves.</div>`;
+        return;
+      }
+
       try {
         const { data, error } = await supabase.from('placas').select('*').order('creado_en', { ascending: false });
 
         if (error) {
-          container.innerHTML = `<div class="text-center py-8 text-rose-400 text-xs">Error al cargar placas: ${error.message}</div>`;
+          if (badge) {
+            badge.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20";
+            badge.innerHTML = `<span class="w-2 h-2 mr-2 rounded-full bg-rose-400"></span> Error Base de Datos`;
+          }
+          if (container) container.innerHTML = `<div class="text-center py-8 text-rose-400 text-xs">Error: ${error.message}</div>`;
           return;
+        }
+
+        if (badge) {
+          badge.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+          badge.innerHTML = `<span class="w-2 h-2 mr-2 rounded-full bg-emerald-400"></span> Conectado a Base de Datos`;
         }
 
         if (!data || data.length === 0) {
-          container.innerHTML = `<div class="text-center py-8 text-slate-500 text-xs">No hay placas registradas todavía.</div>`;
+          if (container) container.innerHTML = `<div class="text-center py-8 text-slate-500 text-xs">No hay placas registradas todavía.</div>`;
           return;
         }
 
-        container.innerHTML = '';
-        data.forEach(p => {
-          const div = document.createElement('div');
-          div.className = "glass-card rounded-2xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4";
-          div.innerHTML = `
-            <div class="space-y-1 min-w-0 flex-1">
+        if (container) {
+          container.innerHTML = '';
+          data.forEach(p => {
+            const div = document.createElement('div');
+            div.className = "glass-card rounded-2xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4";
+            div.innerHTML = `
+              <div class="space-y-1 min-w-0 flex-1">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-sm text-white truncate">${p.nombre}</span>
+                  <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-sky-500/10 text-sky-400 border border-sky-500/20">ID: ${p.id}</span>
+                  <span class="text-[10px] text-slate-500">• ${p.visitas || 0} visitas</span>
+                </div>
+                <div class="flex items-center gap-1.5 text-xs text-emerald-400 truncate">
+                  <i data-lucide="corner-down-right" class="w-3.5 h-3.5 shrink-0"></i>
+                  <span class="truncate font-mono">${p.url_destino}</span>
+                </div>
+              </div>
               <div class="flex items-center gap-2">
-                <span class="font-bold text-sm text-white truncate">${p.nombre}</span>
-                <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-sky-500/10 text-sky-400 border border-sky-500/20">ID: ${p.id}</span>
-                <span class="text-[10px] text-slate-500">• ${p.visitas || 0} visitas</span>
+                <a href="r.html?id=${p.id}" target="_blank" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1">
+                  <i data-lucide="external-link" class="w-3.5 h-3.5 text-emerald-400"></i> Probar
+                </a>
+                <button type="button" onclick="window.editarPlaca('${p.id}', '${p.nombre}', '${p.url_destino}')" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-sky-400 rounded-xl">
+                  <i data-lucide="edit-3" class="w-4 h-4"></i>
+                </button>
+                <button type="button" onclick="window.eliminarPlaca('${p.id}')" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-rose-400 rounded-xl">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
               </div>
-              <div class="flex items-center gap-1.5 text-xs text-emerald-400 truncate">
-                <i data-lucide="corner-down-right" class="w-3.5 h-3.5 shrink-0"></i>
-                <span class="truncate font-mono">${p.url_destino}</span>
-              </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <a href="r.html?id=${p.id}" target="_blank" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1">
-                <i data-lucide="external-link" class="w-3.5 h-3.5 text-emerald-400"></i> Probar
-              </a>
-              <button type="button" onclick="editarPlaca('${p.id}', '${p.nombre}', '${p.url_destino}')" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-sky-400 rounded-xl">
-                <i data-lucide="edit-3" class="w-4 h-4"></i>
-              </button>
-              <button type="button" onclick="eliminarPlaca('${p.id}')" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-rose-400 rounded-xl">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
-              </button>
-            </div>
-          `;
-          container.appendChild(div);
-        });
-        lucide.createIcons();
+            `;
+            container.appendChild(div);
+          });
+        }
+        if (window.lucide) window.lucide.createIcons();
       } catch (err) {
-        container.innerHTML = `<div class="text-center py-8 text-rose-400 text-xs">Error de conexión: ${err.message}</div>`;
+        if (container) container.innerHTML = `<div class="text-center py-8 text-rose-400 text-xs">Error de conexión: ${err.message}</div>`;
       }
-    }
+    };
 
-    async function guardarPlaca(e) {
+    window.guardarPlaca = async function(e) {
       e.preventDefault();
+      if (!supabase) {
+        alert("Error: Supabase no está conectado.");
+        return;
+      }
       const id = document.getElementById('plate-id').value.trim();
       const nombre = document.getElementById('plate-name').value.trim();
       const url_destino = document.getElementById('plate-url').value.trim();
@@ -399,40 +466,49 @@
       if (error) {
         alert("Error al guardar: " + error.message);
       } else {
-        alert("¡Placa guardada correctamente! Ahora al escanear o tocar el chip se abrirá: " + url_destino);
+        alert("¡Placa guardada correctamente! Redireccionando a: " + url_destino);
         document.getElementById('plate-form').reset();
-        actualizarPreview('');
-        cargarPlacas();
+        window.actualizarPreview('');
+        window.cargarPlacas();
       }
-    }
+    };
 
-    async function buscarInfoExistente(id) {
-      const { data } = await supabase.from('placas').select('*').eq('id', id).single();
-      if (data) {
-        document.getElementById('plate-name').value = data.nombre;
-        document.getElementById('plate-url').value = data.url_destino;
-      }
-    }
+    window.buscarInfoExistente = async function(id) {
+      if (!supabase) return;
+      try {
+        const { data } = await supabase.from('placas').select('*').eq('id', id).single();
+        if (data) {
+          const nameInput = document.getElementById('plate-name');
+          const urlInput = document.getElementById('plate-url');
+          if (nameInput) nameInput.value = data.nombre;
+          if (urlInput) urlInput.value = data.url_destino;
+        }
+      } catch (e) {}
+    };
 
-    function editarPlaca(id, nombre, url) {
-      document.getElementById('plate-id').value = id;
-      document.getElementById('plate-name').value = nombre;
-      document.getElementById('plate-url').value = url;
-      actualizarPreview(id);
+    window.editarPlaca = function(id, nombre, url) {
+      const idInput = document.getElementById('plate-id');
+      const nameInput = document.getElementById('plate-name');
+      const urlInput = document.getElementById('plate-url');
+      if (idInput) idInput.value = id;
+      if (nameInput) nameInput.value = nombre;
+      if (urlInput) urlInput.value = url;
+      window.actualizarPreview(id);
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    };
 
-    async function eliminarPlaca(id) {
+    window.eliminarPlaca = async function(id) {
+      if (!supabase) return;
       if (confirm(`¿Desvincular la placa ${id}?`)) {
         await supabase.from('placas').delete().eq('id', id);
-        cargarPlacas();
+        window.cargarPlacas();
       }
-    }
+    };
 
-    // Inicializar iconos y lista de placas al cargar
+    // Inicialización al cargar la página
     document.addEventListener('DOMContentLoaded', () => {
-      lucide.createIcons();
-      cargarPlacas();
+      if (window.lucide) window.lucide.createIcons();
+      window.cargarPlacas();
     });
   </script>
 </body>
