@@ -1,623 +1,418 @@
 <!DOCTYPE html>
-<html lang="es" class="scroll-smooth">
+<html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VR+ </title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VRPlus | Portal de Gestión de Placas QR & NFC</title>
   
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts & Font Awesome Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
-          fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-          },
-          colors: {
-            brand: {
-              cyan: '#00d2ff',
-              blue: '#0055ff',
-              purple: '#7928ca',
-              lime: '#65e000',
-              dark: '#0f172a'
-            }
-          }
+          fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] }
         }
       }
     }
   </script>
+
+  <!-- Supabase JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- HTML5 QR Code Scanner -->
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
   <style>
-    .text-vr-gradient {
-      background: linear-gradient(135deg, #0070f3 0%, #7928ca 50%, #00d2ff 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    body { background-color: #0b0f19; }
+    .glass-panel {
+      background: rgba(17, 24, 39, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
-    .badge-gradient {
-      background: linear-gradient(135deg, rgba(0, 210, 255, 0.1) 0%, rgba(121, 40, 202, 0.1) 100%);
+    .glass-card {
+      background: rgba(30, 41, 59, 0.6);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.06);
     }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.15); opacity: 0.2; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    .nfc-ring { animation: pulse-ring 2s infinite ease-in-out; }
   </style>
 </head>
-<body class="bg-[#f8fafc] text-slate-800 font-sans antialiased selection:bg-brand-cyan selection:text-black">
+<body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-sky-500 selection:text-white">
 
-  <!-- Barra Superior -->
-  <div class="bg-slate-900 text-slate-300 text-xs py-2 px-4 border-b border-slate-800">
-    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
-      <div class="flex items-center space-x-6">
-        <span><i class="fa-solid fa-phone text-brand-lime mr-1.5"></i> 56 3512 3355</span>
-        <span><i class="fa-solid fa-envelope text-cyan-400 mr-1.5"></i> contacto@vrplus.mx</span>
-      </div>
-      <div class="flex items-center space-x-3 font-medium">
-        <span class="text-brand-lime">Impulsamos negocios locales · Conectamos con el futuro</span>
-        <span class="text-slate-600">|</span>
-        <a href="#contacto" class="hover:text-white transition">Asesoría 1 a 1</a>
-      </div>
-    </div>
-  </div>
-
-  <!-- Navbar Flotante / Sticky -->
-  <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-      
-      <!-- Logotipo VR+ -->
-      <a href="#" class="flex items-center space-x-3 group">
-        <div class="flex items-baseline font-black tracking-tighter">
-          <span class="text-3xl font-black text-vr-gradient tracking-tight">VR</span>
-          <span class="text-3xl font-black text-brand-lime drop-shadow-sm">+</span>
+  <!-- Navbar -->
+  <header class="glass-panel sticky top-0 z-50 border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between py-3">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 via-indigo-500 to-emerald-400 flex items-center justify-center font-extrabold text-white text-xl shadow-lg shadow-sky-500/20">
+          VR
         </div>
-        <div class="hidden sm:block pl-3 border-l border-slate-200 text-[10px] uppercase tracking-widest text-slate-500 font-bold leading-tight">
-          Publicidad + <br><span class="text-blue-600">Transformación Digital</span>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <span class="font-extrabold text-xl tracking-tight text-white">VR<span class="text-sky-400">Plus</span></span>
+            <span class="text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20">Placas Pro</span>
+          </div>
+          <p class="text-[11px] text-slate-400 font-medium">Gestión de Redirección QR & NFC</p>
         </div>
-      </a>
+      </div>
 
-      <!-- Menú de Navegación -->
-      <nav class="hidden md:flex items-center space-x-8 font-semibold text-slate-600 text-sm">
-        <a href="#transformacion" class="hover:text-blue-600 transition">Transformación Digital</a>
-        <a href="#nfc" class="hover:text-blue-600 transition">Dispositivos NFC</a>
-        <a href="#wallet" class="hover:text-blue-600 transition">Wallets & Lealtad</a>
-        <a href="#dashboard" class="hover:text-blue-600 transition">Métricas PRO</a>
-        <a href="#faq" class="hover:text-blue-600 transition">Preguntas</a>
-      </nav>
-
-      <!-- Botones Acción -->
-      <div class="flex items-center space-x-4">
-        <a href="https://wa.me/528146817141" target="_blank" class="hidden sm:inline-flex items-center text-xs font-bold text-slate-700 hover:text-blue-600 transition gap-1.5">
-          <i class="fa-brands fa-whatsapp text-emerald-500 text-sm"></i> WhatsApp
-        </a>
-        <a href="#contacto" class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-5 py-2.5 rounded-full text-xs font-bold tracking-wide shadow-md shadow-blue-500/20 transition transform hover:-translate-y-0.5">
-          Impulsar mi Negocio
-        </a>
+      <div class="flex items-center space-x-3">
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <span class="w-2 h-2 mr-2 rounded-full bg-emerald-400 animate-ping"></span>
+          Conectado a Base de Datos
+        </span>
       </div>
     </div>
   </header>
 
-  <!-- 1. HERO SECTION: Enfoque Transformación Digital & Barrera Tecnológica -->
-  <section class="relative pt-16 pb-24 overflow-hidden bg-gradient-to-b from-blue-50/50 via-white to-slate-50 border-b border-slate-200">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-      <div class="grid lg:grid-cols-12 gap-12 items-center">
-        
-        <!-- Hero Copy (7 Cols) -->
-        <div class="lg:col-span-7">
-          <div class="inline-flex items-center space-x-2 bg-blue-50 border border-blue-200 text-blue-800 px-3.5 py-1.5 rounded-full text-xs font-bold mb-6">
-            <span class="flex h-2 w-2 rounded-full bg-brand-lime animate-pulse"></span>
-            <span>PUBLICIDAD + TRANSFORMACIÓN DIGITAL</span>
-          </div>
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
 
-          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.15]">
-            Llevamos tu negocio local al futuro <br class="hidden sm:inline">
-            <span class="text-vr-gradient">sin complicaciones técnicas.</span>
-          </h1>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
-          <p class="mt-6 text-lg text-slate-600 leading-relaxed max-w-2xl">
-            En <strong>VR+</strong> rompemos la barrera de entrada a las nuevas tecnologías. Convertimos negocios tradicionales en marcas digitales líderes mediante herramientas simples, tangibles y de alto impacto: <strong>Ecosistema NFC, Reseñas en Google y Fidelización en Apple/Google Wallet.</strong>
-          </p>
-
-          <!-- CTAs -->
-          <div class="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-            <a href="#transformacion" class="bg-slate-900 hover:bg-black text-white font-bold px-8 py-4 rounded-xl text-center shadow-lg shadow-slate-900/10 transition transform hover:-translate-y-0.5">
-              Descubrir Cómo Funciona →
-            </a>
-            <a href="https://wa.me/525635123355" target="_blank" class="border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold px-6 py-4 rounded-xl text-center flex items-center justify-center gap-2 transition shadow-sm">
-              <i class="fa-solid fa-comments text-blue-600"></i> Hablar con un Asesor
-            </a>
-          </div>
-
-          <!-- Pilares de Transformación -->
-          <div class="mt-10 pt-8 border-t border-slate-200 grid grid-cols-3 gap-4 text-left">
-            <div>
-              <p class="text-xl font-extrabold text-slate-900">0% Apps</p>
-              <p class="text-xs text-slate-500 mt-0.5">Sin fricción para el cliente</p>
-            </div>
-            <div>
-              <p class="text-xl font-extrabold text-blue-600">100% Directo</p>
-              <p class="text-xs text-slate-500 mt-0.5">NFC + QR + Wallets</p>
-            </div>
-            <div>
-              <p class="text-xl font-extrabold text-brand-lime">Escalable</p>
-              <p class="text-xs text-slate-500 mt-0.5">Resultados medibles</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Hero Graphic (5 Cols) -->
-        <div class="lg:col-span-5 relative">
-          <div class="bg-white rounded-3xl p-6 shadow-2xl border border-slate-200 relative">
-            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
-              <span class="text-xs font-extrabold uppercase text-slate-400">Ecosistema VR+</span>
-              <span class="text-xs bg-emerald-50 text-emerald-700 font-bold px-2.5 py-1 rounded-full border border-emerald-200">En Vivo</span>
-            </div>
-
-            <!-- 3 Pasos del Ecosistema -->
-            <div class="mt-5 space-y-3.5">
-              
-              <div class="p-3.5 rounded-2xl bg-blue-50/70 border border-blue-100 flex items-center gap-4">
-                <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-lg shadow-sm">
-                  <i class="fa-solid fa-nfc-directional"></i>
-                </div>
-                <div>
-                  <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wide">1. Captura en Local (NFC)</h4>
-                  <p class="text-xs text-slate-500">Toque directo para Google Reviews y WhatsApp.</p>
-                </div>
-              </div>
-
-              <div class="p-3.5 rounded-2xl bg-purple-50/70 border border-purple-100 flex items-center gap-4">
-                <div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold text-lg shadow-sm">
-                  <i class="fa-solid fa-wallet"></i>
-                </div>
-                <div>
-                  <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wide">2. Retención en Wallet</h4>
-                  <p class="text-xs text-slate-500">Tarjetas de lealtad en Apple & Google Wallet.</p>
-                </div>
-              </div>
-
-              <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center gap-4">
-                <div class="w-10 h-10 rounded-xl bg-slate-900 text-brand-lime flex items-center justify-center font-bold text-lg shadow-sm">
-                  <i class="fa-solid fa-chart-line"></i>
-                </div>
-                <div>
-                  <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wide">3. Métricas y Difusión</h4>
-                  <p class="text-xs text-slate-500">Notificaciones push y aumento de reputación.</p>
-                </div>
-              </div>
-
-            </div>
-
-            <div class="mt-6 pt-4 border-t border-slate-100 text-center">
-              <span class="text-xs font-bold text-slate-500">
-                🚀 Rompe la barrera digital en menos de 24 horas
-              </span>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- 2. PILARES DE TRANSFORMACIÓN DIGITAL: Cómo ayudamos a tu negocio -->
-  <section id="transformacion" class="py-20 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      
-      <div class="text-center max-w-3xl mx-auto mb-16">
-        <span class="text-blue-600 text-xs font-extrabold uppercase tracking-wider">Publicidad + Transformación Digital</span>
-        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-2">
-          ¿Por qué digitalizar tu punto de venta con VR+?
-        </h2>
-        <p class="mt-3 text-slate-600 text-base">
-          Muchos negocios pierden clientes por no contar con herramientas modernas o por implementar sistemas complicados que nadie usa. En VR+ hacemos la transición fácil y rentable.
-        </p>
-      </div>
-
-      <div class="grid md:grid-cols-3 gap-8">
-        
-        <div class="bg-slate-50 rounded-2xl p-8 border border-slate-200/80 hover:border-blue-400 transition hover:shadow-lg">
-          <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-2xl mb-6">
-            <i class="fa-solid fa-bullhorn"></i>
-          </div>
-          <h3 class="text-xl font-bold text-slate-900">1. Posicionamiento y Reseñas</h3>
-          <p class="text-sm text-slate-600 mt-3 leading-relaxed">
-            Tu reputación en Google Maps y TripAdvisor decide si un cliente entra a tu local o va con la competencia. Hacemos que dejar una reseña 5 estrellas tome solo 3 segundos.
-          </p>
-        </div>
-
-        <div class="bg-slate-50 rounded-2xl p-8 border border-slate-200/80 hover:border-purple-400 transition hover:shadow-lg">
-          <div class="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-2xl mb-6">
-            <i class="fa-solid fa-mobile-screen-button"></i>
-          </div>
-          <h3 class="text-xl font-bold text-slate-900">2. Cero Fricción para el Cliente</h3>
-          <p class="text-sm text-slate-600 mt-3 leading-relaxed">
-            Nadie quiere llenar formularios largos ni descargar apps que saturan la memoria. Nuestras soluciones funcionan con tecnología nativa que ya está en su teléfono.
-          </p>
-        </div>
-
-        <div class="bg-slate-50 rounded-2xl p-8 border border-slate-200/80 hover:border-emerald-400 transition hover:shadow-lg">
-          <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl mb-6">
-            <i class="fa-solid fa-repeat"></i>
-          </div>
-          <h3 class="text-xl font-bold text-slate-900">3. Clientes que Vuelven (Retención)</h3>
-          <p class="text-sm text-slate-600 mt-3 leading-relaxed">
-            Un cliente nuevo es costoso; un cliente que regresa es rentable. Con tarjetas de lealtad y promociones automáticas en Wallet, multiplicas la frecuencia de compra.
-          </p>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- 3. HARDWARE NFC: La puerta de entrada física a lo digital -->
-  <section id="nfc" class="py-20 bg-slate-50 border-t border-b border-slate-200">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      
-      <div class="flex flex-col md:flex-row md:items-end justify-between mb-16">
-        <div>
-          <span class="text-blue-600 text-xs font-extrabold uppercase tracking-widest">Hardware de Conexión</span>
-          <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-1">
-            Dispositivos y Tags NFC para tu Local
-          </h2>
-          <p class="text-slate-600 text-sm mt-2 max-w-xl">
-            Tus clientes acercan su teléfono y acceden al instante a tu perfil de Google, WhatsApp o catálogo digital. Sin apps, sin esperas.
-          </p>
-        </div>
-        <div class="mt-4 md:mt-0">
-          <span class="text-xs bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-xl font-bold shadow-sm">
-            ⚡ Pago Único · Sin mensualidades
-          </span>
-        </div>
-      </div>
-
-      <!-- Grid de Productos NFC -->
-      <div class="grid md:grid-cols-3 gap-8">
-        
-        <!-- Tarjeta Google Reviews -->
-        <div class="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col hover:shadow-xl transition group">
-          <div class="bg-slate-100 h-48 rounded-xl flex items-center justify-center mb-5 group-hover:scale-105 transition">
-            <i class="fa-solid fa-id-card text-6xl text-blue-600"></i>
-          </div>
-          <span class="text-[11px] font-extrabold text-blue-600 bg-blue-50 px-2.5 py-1 rounded w-fit mb-2">Tarjeta Portátil</span>
-          <h4 class="text-lg font-bold text-slate-900">Tarjeta NFC Google Reviews</h4>
-          <p class="text-xs text-slate-500 mt-2 flex-grow">
-            Ideal para que el personal o meseros la acerquen a la mesa o al momento del cobro para solicitar reseñas 5 estrellas al instante.
-          </p>
-          <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
-            <div>
-              <span class="text-[11px] text-slate-400 block">Precio único</span>
-              <span class="text-xl font-extrabold text-slate-900">$299 MXN</span>
-            </div>
-            <a href="https://wa.me/528146817141?text=Hola,%20me%20interesa%20la%20Tarjeta%20NFC%20Google" target="_blank" class="bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition">
-              Pedir
-            </a>
-          </div>
-        </div>
-
-        <!-- Placa Adherible -->
-        <div class="bg-white rounded-2xl border-2 border-blue-600 p-6 flex flex-col hover:shadow-xl transition group relative">
-          <div class="absolute -top-3 right-4 bg-blue-600 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-md">
-            MÁS VENDIDO
-          </div>
-          <div class="bg-slate-100 h-48 rounded-xl flex items-center justify-center mb-5 group-hover:scale-105 transition">
-            <i class="fa-solid fa-square-plus text-6xl text-blue-600"></i>
-          </div>
-          <span class="text-[11px] font-extrabold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded w-fit mb-2">PVC Alto Brillo</span>
-          <h4 class="text-lg font-bold text-slate-900">Placa Adherible NFC + QR</h4>
-          <p class="text-xs text-slate-500 mt-2 flex-grow">
-            Pégala en mostradores, mesas, recepción, barras o espejos. Resiste agua, sol y uso rudo diario.
-          </p>
-          <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
-            <div>
-              <span class="text-[11px] text-slate-400 block">Precio único</span>
-              <span class="text-xl font-extrabold text-slate-900">$449 MXN</span>
-            </div>
-            <a href="https://wa.me/528146817141?text=Hola,%20me%20interesa%20la%20Placa%20Adherible%20NFC" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition">
-              Pedir
-            </a>
-          </div>
-        </div>
-
-        <!-- Banner de Mostrador -->
-        <div class="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col hover:shadow-xl transition group">
-          <div class="bg-slate-100 h-48 rounded-xl flex items-center justify-center mb-5 group-hover:scale-105 transition">
-            <i class="fa-solid fa-chalkboard-user text-6xl text-purple-600"></i>
-          </div>
-          <span class="text-[11px] font-extrabold text-purple-600 bg-purple-50 px-2.5 py-1 rounded w-fit mb-2">Acrílico Premium</span>
-          <h4 class="text-lg font-bold text-slate-900">Banner de Mostrador VR+</h4>
-          <p class="text-xs text-slate-500 mt-2 flex-grow">
-            Máxima elegancia y visibilidad para cajas de cobro, barras de atención y recepción en clínicas, spas y restaurantes.
-          </p>
-          <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
-            <div>
-              <span class="text-[11px] text-slate-400 block">Precio único</span>
-              <span class="text-xl font-extrabold text-slate-900">$499 MXN</span>
-            </div>
-            <a href="https://wa.me/528146817141?text=Hola,%20me%20interesa%20el%20Banner%20de%20Mostrador" target="_blank" class="bg-slate-900 hover:bg-purple-600 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition">
-              Pedir
-            </a>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Solución MultiLink y WhatsApp -->
-      <div class="mt-8 bg-white rounded-2xl p-6 border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-6">
-        <div class="flex items-center gap-4">
-          <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl font-bold flex-shrink-0">
-            <i class="fa-brands fa-whatsapp"></i>
-          </div>
-          <div>
-            <h4 class="font-bold text-slate-900">¿Necesitas WhatsApp directo o Menú Digital con NFC?</h4>
-            <p class="text-xs text-slate-500">También configuramos dispositivos NFC para apertura directa de chats y catálogos interactivos.</p>
-          </div>
-        </div>
-        <a href="https://wa.me/525635123355" target="_blank" class="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1">
-          Consultar todas las opciones <i class="fa-solid fa-arrow-right"></i>
-        </a>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- 4. WALLET DIGITAL & FIDELIZACIÓN: La siguiente etapa de la digitalización -->
-  <section id="wallet" class="py-20 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      
-      <div class="text-center max-w-3xl mx-auto mb-16">
-        <span class="text-purple-600 text-xs font-extrabold uppercase tracking-widest">Lealtad & Retención</span>
-        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-1">
-          Tarjetas de Lealtad en Apple & Google Wallet
-        </h2>
-        <p class="mt-3 text-slate-600 text-sm">
-          Lleva tu programa de clientes frecuentes al smartphone de tus clientes. Sin tarjetas de papel que se pierden y sin gastar miles de dólares en desarrollar una app.
-        </p>
-      </div>
-
-      <div class="grid lg:grid-cols-12 gap-12 items-center">
-        
-        <!-- Tarjetas Wallet Explicación (7 Cols) -->
-        <div class="lg:col-span-7 space-y-6">
+      <!-- Panel Izquierdo: Vincular / Editar -->
+      <section class="lg:col-span-5 space-y-6">
+        <div class="glass-panel rounded-3xl p-6 sm:p-7 shadow-2xl space-y-6">
           
-          <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 flex gap-4">
-            <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl flex-shrink-0">
-              <i class="fa-solid fa-stamp"></i>
+          <div>
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+              <i data-lucide="scan" class="w-5 h-5 text-sky-400"></i>
+              Vincular o Modificar Placa
+            </h3>
+            <p class="text-xs text-slate-400 mt-1">
+              Acerca el teléfono al chip NFC, escanea el QR con la cámara o ingresa el serial.
+            </p>
+          </div>
+
+          <!-- Selector de Modo de Detección -->
+          <div class="grid grid-cols-3 gap-2 p-1.5 bg-slate-950/70 rounded-2xl border border-slate-800">
+            <button id="tab-nfc" onclick="switchTab('nfc')" class="tab-btn py-2.5 px-2 text-xs font-bold rounded-xl transition bg-sky-500 text-white flex flex-col items-center gap-1.5 shadow-md">
+              <i data-lucide="nfc" class="w-4 h-4"></i>
+              Leer NFC
+            </button>
+            <button id="tab-qr" onclick="switchTab('qr')" class="tab-btn py-2.5 px-2 text-xs font-bold rounded-xl transition text-slate-400 hover:text-white flex flex-col items-center gap-1.5">
+              <i data-lucide="qr-code" class="w-4 h-4"></i>
+              Cámara QR
+            </button>
+            <button id="tab-serial" onclick="switchTab('serial')" class="tab-btn py-2.5 px-2 text-xs font-bold rounded-xl transition text-slate-400 hover:text-white flex flex-col items-center gap-1.5">
+              <i data-lucide="hash" class="w-4 h-4"></i>
+              Manual
+            </button>
+          </div>
+
+          <!-- Módulo NFC Activo -->
+          <div id="nfc-scanner-container" class="bg-slate-950 p-6 rounded-2xl border border-slate-800 text-center space-y-3">
+            <div class="relative w-16 h-16 mx-auto flex items-center justify-center">
+              <div class="absolute inset-0 rounded-full bg-sky-500/20 nfc-ring"></div>
+              <div class="w-12 h-12 rounded-full bg-sky-500/30 text-sky-400 flex items-center justify-center relative">
+                <i data-lucide="radio" class="w-6 h-6"></i>
+              </div>
             </div>
             <div>
-              <h3 class="text-base font-bold text-slate-900">Tarjetas de Sellos Digitales</h3>
-              <p class="text-xs text-slate-600 mt-1">Acumulan visitas o compras y otorgan recompensas automáticas. El cliente la instala en segundos escaneando un QR en tu mostrador.</p>
+              <h4 class="font-bold text-sm text-slate-200">Sensor NFC Listo</h4>
+              <p class="text-xs text-slate-400 mt-1" id="nfc-status-text">Toca el botón y acerca la placa a la antena trasera de tu teléfono.</p>
             </div>
+            <button id="btn-nfc-start" onclick="iniciarLecturaNFC()" class="px-5 py-2.5 bg-sky-600 hover:bg-sky-500 rounded-xl text-xs font-bold text-white transition shadow-lg shadow-sky-600/25">
+              Activar Lector NFC
+            </button>
           </div>
 
-          <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 flex gap-4">
-            <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-xl flex-shrink-0">
-              <i class="fa-solid fa-ticket"></i>
-            </div>
+          <!-- Módulo Escáner QR -->
+          <div id="qr-scanner-container" class="hidden bg-slate-950 p-4 rounded-2xl border border-slate-800 text-center">
+            <div id="reader" class="w-full rounded-xl overflow-hidden mb-3 border border-slate-800"></div>
+            <p class="text-xs text-slate-400">Apunta la cámara al QR de la placa</p>
+            <button onclick="stopQrScanner()" class="mt-3 text-xs font-semibold text-rose-400 hover:text-rose-300">
+              Cerrar Cámara
+            </button>
+          </div>
+
+          <!-- Formulario -->
+          <form id="plate-form" onsubmit="guardarPlaca(event)" class="space-y-4">
             <div>
-              <h3 class="text-base font-bold text-slate-900">Cupones y Promociones Push</h3>
-              <p class="text-xs text-slate-600 mt-1">Envía notificaciones que aparecen directo en la pantalla bloqueada del cliente cuando tengas promociones especiales o días bajos de venta.</p>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+                ID / Serial de la Placa
+              </label>
+              <div class="relative">
+                <input type="text" id="plate-id" required placeholder="Ej. 546782876366" 
+                  class="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl px-4 py-3 text-sm font-mono text-emerald-400 placeholder-slate-600 focus:outline-none focus:border-sky-500 transition pl-10"
+                  oninput="actualizarPreview(this.value)">
+                <i data-lucide="tag" class="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5"></i>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1.5">
+                Enlace grabado en QR/NFC: <span class="font-mono text-sky-400">.../r.html?id=<span id="id-preview">546782876366</span></span>
+              </p>
             </div>
-          </div>
 
-          <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 flex gap-4">
-            <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl flex-shrink-0">
-              <i class="fa-solid fa-crown"></i>
-            </div>
             <div>
-              <h3 class="text-base font-bold text-slate-900">Membresías y Pases VIP</h3>
-              <p class="text-xs text-slate-600 mt-1">Gestiona accesos, suscripciones o beneficios exclusivos para tus mejores clientes con códigos QR y verificación instantánea.</p>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Simulación Wallet en Pantalla Clara (5 Cols) -->
-        <div class="lg:col-span-5 flex justify-center">
-          <div class="w-full max-w-sm bg-slate-900 rounded-[2.5rem] p-5 shadow-2xl border-4 border-slate-800 text-white">
-            <div class="w-20 h-4 bg-slate-800 rounded-full mx-auto mb-4"></div>
-
-            <!-- Pass Mockup -->
-            <div class="bg-gradient-to-br from-blue-700 via-indigo-900 to-slate-950 p-5 rounded-2xl shadow-md border border-white/10">
-              <div class="flex justify-between items-center pb-3 border-b border-white/10">
-                <span class="text-xs font-black tracking-wider text-cyan-300">VR+ REWARDS</span>
-                <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded font-mono">CLIENTE FRECUENTE</span>
-              </div>
-              <div class="my-4">
-                <p class="text-[10px] text-slate-300">Negocio Afiliado</p>
-                <h4 class="text-base font-bold text-white">Restaurante / Clínica / Spa</h4>
-              </div>
-              <!-- Stamp slots -->
-              <div class="bg-black/30 p-3 rounded-xl border border-white/5 my-3">
-                <div class="flex justify-between text-xs mb-2">
-                  <span class="text-slate-300">Progreso:</span>
-                  <span class="text-brand-lime font-bold">8 / 10 Sellos</span>
-                </div>
-                <div class="grid grid-cols-5 gap-1.5">
-                  <div class="h-6 rounded bg-brand-lime/20 border border-brand-lime flex items-center justify-center text-brand-lime text-[10px]"><i class="fa-solid fa-check"></i></div>
-                  <div class="h-6 rounded bg-brand-lime/20 border border-brand-lime flex items-center justify-center text-brand-lime text-[10px]"><i class="fa-solid fa-check"></i></div>
-                  <div class="h-6 rounded bg-brand-lime/20 border border-brand-lime flex items-center justify-center text-brand-lime text-[10px]"><i class="fa-solid fa-check"></i></div>
-                  <div class="h-6 rounded bg-brand-lime/20 border border-brand-lime flex items-center justify-center text-brand-lime text-[10px]"><i class="fa-solid fa-check"></i></div>
-                  <div class="h-6 rounded bg-white/10 flex items-center justify-center text-slate-400 text-[10px]"><i class="fa-solid fa-gift"></i></div>
-                </div>
-              </div>
-              <p class="text-center text-[10px] text-slate-400 font-mono">Apple & Google Wallet Compatible</p>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+                Nombre de la Placa
+              </label>
+              <input type="text" id="plate-name" required placeholder="Ej. Placa Mostrador Recepción" 
+                class="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-sky-500 transition">
             </div>
 
-            <!-- Push notification -->
-            <div class="mt-4 bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/10 flex items-center gap-3">
-              <i class="fa-solid fa-bell text-brand-lime text-base"></i>
-              <div class="text-[11px] leading-tight">
-                <p class="font-bold text-white">Notificación Push</p>
-                <p class="text-slate-300">¡Te faltan solo 2 sellos para tu recompensa!</p>
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+                URL Destino (A dónde redirige)
+              </label>
+              <input type="url" id="plate-url" required placeholder="https://g.page/r/tu-negocio/review" 
+                class="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-sky-500 transition">
+              
+              <div class="flex flex-wrap gap-2 mt-2">
+                <button type="button" onclick="setPreset('https://g.page/r/tu-negocio/review')" class="text-[11px] font-semibold px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300">Google Reviews</button>
+                <button type="button" onclick="setPreset('https://instagram.com/tu_cuenta')" class="text-[11px] font-semibold px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300">Instagram</button>
+                <button type="button" onclick="setPreset('https://wa.me/5215500000000')" class="text-[11px] font-semibold px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300">WhatsApp</button>
               </div>
             </div>
+
+            <button type="submit" id="btn-save" class="w-full bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-sky-500/25 text-sm mt-2">
+              <i data-lucide="save" class="w-4 h-4"></i>
+              Guardar y Activar Redirección
+            </button>
+          </form>
+
+        </div>
+      </section>
+
+      <!-- Panel Derecho: Placas Registradas -->
+      <section class="lg:col-span-7 space-y-6">
+
+        <div class="glass-panel rounded-3xl p-6 sm:p-7 shadow-2xl space-y-4">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+            <div>
+              <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <i data-lucide="layers" class="w-5 h-5 text-indigo-400"></i>
+                Placas en Base de Datos
+              </h3>
+              <p class="text-xs text-slate-400 mt-0.5">Las redirecciones se actualizan en tiempo real</p>
+            </div>
+            <button onclick="cargarPlacas()" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-slate-300">
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <div id="plates-container" class="space-y-3 pt-2">
+            <div class="text-center py-8 text-slate-500 text-xs">Cargando placas registradas...</div>
           </div>
         </div>
 
-      </div>
-    </div>
-  </section>
-
-  <!-- 5. DASHBOARD & MÉTRICAS: Control de tu Negocio -->
-  <section id="dashboard" class="py-20 bg-slate-900 text-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      
-      <div class="text-center max-w-3xl mx-auto mb-16">
-        <span class="text-cyan-400 text-xs font-extrabold uppercase tracking-widest">Control Total</span>
-        <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight mt-1">
-          Mide el Impacto Real de tu Negocio
-        </h2>
-        <p class="text-slate-400 text-sm mt-2">
-          No solo implementamos tecnología; te damos la analítica para saber cuántos clientes tocan tus dispositivos NFC y cuántos visitan tu negocio recurrentemente.
-        </p>
-      </div>
-
-      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        
-        <div class="bg-slate-800/90 border border-slate-700/80 p-6 rounded-2xl">
-          <span class="text-xs text-slate-400 font-medium">Toques NFC & QR</span>
-          <div class="text-3xl font-extrabold text-white mt-2">1,840</div>
-          <p class="text-xs text-brand-lime mt-2 font-semibold">↑ +140% visitas registradas</p>
-        </div>
-
-        <div class="bg-slate-800/90 border border-slate-700/80 p-6 rounded-2xl">
-          <span class="text-xs text-slate-400 font-medium">Rating en Google Maps</span>
-          <div class="text-3xl font-extrabold text-white mt-2 flex items-baseline gap-2">
-            4.9 <span class="text-amber-400 text-sm">★★★★★</span>
-          </div>
-          <p class="text-xs text-cyan-400 mt-2 font-semibold">+52 reseñas verificadas</p>
-        </div>
-
-        <div class="bg-slate-800/90 border border-slate-700/80 p-6 rounded-2xl">
-          <span class="text-xs text-slate-400 font-medium">Tarjetas Wallet Guardadas</span>
-          <div class="text-3xl font-extrabold text-white mt-2">680</div>
-          <p class="text-xs text-purple-400 mt-2 font-semibold">Base de datos propia</p>
-        </div>
-
-        <div class="bg-slate-800/90 border border-slate-700/80 p-6 rounded-2xl">
-          <span class="text-xs text-slate-400 font-medium">Apertura de Push</span>
-          <div class="text-3xl font-extrabold text-white mt-2">91.8%</div>
-          <p class="text-xs text-brand-lime mt-2 font-semibold">Impacto directo sin SMS</p>
-        </div>
-
-      </div>
-
-    </div>
-  </section>
-
-  <!-- 6. PREGUNTAS FRECUENTES (FAQ) -->
-  <section id="faq" class="py-20 bg-slate-50">
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-      
-      <div class="text-center mb-12">
-        <span class="text-blue-600 text-xs font-extrabold uppercase tracking-widest">Resolvemos tus Dudas</span>
-        <h2 class="text-3xl font-extrabold text-slate-900 mt-1">Preguntas Frecuentes</h2>
-      </div>
-
-      <div class="space-y-4">
-        
-        <div class="border border-slate-200 rounded-xl bg-white overflow-hidden shadow-sm">
-          <button onclick="toggleFaq(1)" class="w-full py-4 px-5 text-left font-bold text-slate-800 flex justify-between items-center">
-            <span>¿Por qué VR+ ayuda a romper la barrera tecnológica de mi negocio?</span>
-            <i id="faq-icon-1" class="fa-solid fa-chevron-down text-blue-600 text-xs transition-transform"></i>
-          </button>
-          <div id="faq-ans-1" class="hidden px-5 pb-4 text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
-            Porque eliminamos la complejidad. Nosotros configuramos tus tags NFC, diseñamos tus tarjetas de lealtad y te entregamos soluciones listas para usarse desde el primer día, sin que tú ni tu equipo necesiten saber de programación.
-          </div>
-        </div>
-
-        <div class="border border-slate-200 rounded-xl bg-white overflow-hidden shadow-sm">
-          <button onclick="toggleFaq(2)" class="w-full py-4 px-5 text-left font-bold text-slate-800 flex justify-between items-center">
-            <span>¿Los tags NFC requieren alguna batería o aplicación?</span>
-            <i id="faq-icon-2" class="fa-solid fa-chevron-down text-blue-600 text-xs transition-transform"></i>
-          </button>
-          <div id="faq-ans-2" class="hidden px-5 pb-4 text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
-            No. Los dispositivos NFC son pasivos: no requieren batería, recarga ni mantenimiento. Funcionan por inducción con la antena del smartphone del cliente al instante.
-          </div>
-        </div>
-
-        <div class="border border-slate-200 rounded-xl bg-white overflow-hidden shadow-sm">
-          <button onclick="toggleFaq(3)" class="w-full py-4 px-5 text-left font-bold text-slate-800 flex justify-between items-center">
-            <span>¿Mis clientes necesitan instalar una app para la tarjeta Wallet?</span>
-            <i id="faq-icon-3" class="fa-solid fa-chevron-down text-blue-600 text-xs transition-transform"></i>
-          </button>
-          <div id="faq-ans-3" class="hidden px-5 pb-4 text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
-            No. Se guarda directamente en Apple Wallet (en iPhone) y Google Wallet (en Android). Ambas vienen preinstaladas de fábrica en casi todos los celulares.
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- 7. FOOTER & CONTACTO -->
-  <footer id="contacto" class="bg-slate-950 text-slate-400 text-sm py-16 border-t border-slate-800">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-10">
-      
-      <div class="space-y-4">
-        <div class="flex items-baseline font-black tracking-tighter">
-          <span class="text-3xl font-black text-vr-gradient tracking-tight">VR</span>
-          <span class="text-3xl font-black text-brand-lime">+</span>
-        </div>
-        <p class="text-xs uppercase tracking-wider text-slate-500 font-bold">Publicidad + Transformación Digital</p>
-        <p class="text-xs leading-relaxed text-slate-400">
-          Impulsamos negocios locales, conectamos con el futuro.
-        </p>
-        <div class="flex space-x-3 pt-2">
-          <a href="https://wa.me/525635123355" target="_blank" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-emerald-600 text-white flex items-center justify-center transition"><i class="fa-brands fa-whatsapp"></i></a>
-          <a href="#" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-pink-600 text-white flex items-center justify-center transition"><i class="fa-brands fa-instagram"></i></a>
-          <a href="#" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-blue-600 text-white flex items-center justify-center transition"><i class="fa-brands fa-facebook-f"></i></a>
-        </div>
-      </div>
-
-      <div>
-        <h4 class="font-bold text-white text-xs uppercase tracking-wider mb-4">Hardware NFC</h4>
-        <ul class="space-y-2 text-xs">
-          <li><a href="#nfc" class="hover:text-cyan-400 transition">Tarjeta Google Reviews</a></li>
-          <li><a href="#nfc" class="hover:text-cyan-400 transition">Placas Adheribles NFC</a></li>
-          <li><a href="#nfc" class="hover:text-cyan-400 transition">Banners de Mostrador</a></li>
-          <li><a href="#nfc" class="hover:text-cyan-400 transition">WhatsApp & MultiLink</a></li>
-        </ul>
-      </div>
-
-      <div>
-        <h4 class="font-bold text-white text-xs uppercase tracking-wider mb-4">Transformación & Wallet</h4>
-        <ul class="space-y-2 text-xs">
-          <li><a href="#wallet" class="hover:text-cyan-400 transition">Tarjetas de Sellos Digitales</a></li>
-          <li><a href="#wallet" class="hover:text-cyan-400 transition">Cupones y Descuentos</a></li>
-          <li><a href="#wallet" class="hover:text-cyan-400 transition">Membresías VIP</a></li>
-          <li><a href="#dashboard" class="hover:text-cyan-400 transition">Dashboard de Métricas</a></li>
-        </ul>
-      </div>
-
-      <div>
-        <h4 class="font-bold text-white text-xs uppercase tracking-wider mb-4">Contacto Directo</h4>
-        <p class="text-xs">WhatsApp: +52 814 681 7141</p>
-        <p class="text-xs mt-1">Email: contacto@vrplus.mx</p>
-        <p class="text-xs text-slate-500 mt-4">Soluciones para Negocios en México</p>
-      </div>
+      </section>
 
     </div>
 
-    <div class="max-w-7xl mx-auto px-4 mt-12 pt-6 border-t border-slate-900 text-center text-xs text-slate-600">
-      &copy; 2026 VR+. Todos los derechos reservados.
-    </div>
-  </footer>
+  </main>
 
-  <!-- Script FAQ -->
   <script>
-    function toggleFaq(id) {
-      const answer = document.getElementById(`faq-ans-${id}`);
-      const icon = document.getElementById(`faq-icon-${id}`);
-      if (answer.classList.contains('hidden')) {
-        answer.classList.remove('hidden');
-        icon.classList.add('rotate-180');
+    // 1. CONFIGURACIÓN DE SUPABASE
+    const SUPABASE_URL = "TU_SUPABASE_URL_AQUI";
+    const SUPABASE_KEY = "TU_SUPABASE_ANON_KEY_AQUI";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let html5QrCode = null;
+
+    // 2. FUNCIÓN DE LECTURA NFC (Extrae el ID del chip o de la URL grabada)
+    async function iniciarLecturaNFC() {
+      const statusText = document.getElementById('nfc-status-text');
+      
+      if ("NDEFReader" in window) {
+        try {
+          const ndef = new NDEFReader();
+          await ndef.scan();
+          statusText.innerHTML = "<span class='text-emerald-400 font-semibold animate-pulse'>¡Escaneando! Acerca la placa a la parte trasera del móvil...</span>";
+
+          ndef.onreading = event => {
+            let extractedId = "";
+
+            // Intento A: Leer los registros NDEF grabados (si contiene la URL r.html?id=XXX)
+            for (const record of event.message.records) {
+              const textDecoder = new TextDecoder(record.encoding || 'utf-8');
+              const contenido = textDecoder.decode(record.data);
+              
+              if (contenido.includes("id=")) {
+                const urlObj = new URL(contenido.startsWith('http') ? contenido : 'https://' + contenido);
+                extractedId = urlObj.searchParams.get('id');
+              } else if (contenido.length > 3) {
+                extractedId = contenido.trim();
+              }
+            }
+
+            // Intento B: Si el chip está vacío, usar el Serial Number de fábrica del chip NTAG215
+            if (!extractedId && event.serialNumber) {
+              extractedId = event.serialNumber.replace(/:/g, '').toUpperCase();
+            }
+
+            if (extractedId) {
+              document.getElementById('plate-id').value = extractedId;
+              actualizarPreview(extractedId);
+              buscarInfoExistente(extractedId);
+              statusText.innerHTML = `<span class='text-emerald-400 font-bold'>✓ Placa detectada: ${extractedId}</span>`;
+            }
+          };
+
+        } catch (error) {
+          statusText.innerHTML = `<span class='text-rose-400'>Error al abrir NFC: ${error.message}</span>`;
+        }
       } else {
-        answer.classList.add('hidden');
-        icon.classList.remove('rotate-180');
+        statusText.innerHTML = "<span class='text-amber-400'>Web NFC solo está soportado en navegadores móviles (Chrome en Android). Ingresa el serial manualmente o usa la cámara QR.</span>";
       }
     }
+
+    // 3. FUNCIÓN ESCÁNER QR
+    function startQrScanner() {
+      if (!html5QrCode) html5QrCode = new Html5Qrcode("reader");
+      html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 220 },
+        (decodedText) => {
+          let cleanId = decodedText;
+          if (decodedText.includes("id=")) {
+            const urlObj = new URL(decodedText.startsWith('http') ? decodedText : 'https://' + decodedText);
+            cleanId = urlObj.searchParams.get('id') || decodedText;
+          }
+          document.getElementById('plate-id').value = cleanId;
+          actualizarPreview(cleanId);
+          stopQrScanner();
+          switchTab('serial');
+          buscarInfoExistente(cleanId);
+        },
+        () => {}
+      ).catch(e => console.warn(e));
+    }
+
+    function stopQrScanner() {
+      if (html5QrCode && html5QrCode.isScanning) {
+        html5QrCode.stop().then(() => html5QrCode.clear()).catch(e => console.log(e));
+      }
+    }
+
+    // 4. GESTIÓN DE PESTAÑAS
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('bg-sky-500', 'text-white', 'shadow-md');
+        b.classList.add('text-slate-400');
+      });
+
+      document.getElementById('qr-scanner-container').classList.add('hidden');
+      document.getElementById('nfc-scanner-container').classList.add('hidden');
+      stopQrScanner();
+
+      if (tab === 'nfc') {
+        document.getElementById('tab-nfc').classList.add('bg-sky-500', 'text-white', 'shadow-md');
+        document.getElementById('nfc-scanner-container').classList.remove('hidden');
+      } else if (tab === 'qr') {
+        document.getElementById('tab-qr').classList.add('bg-sky-500', 'text-white', 'shadow-md');
+        document.getElementById('qr-scanner-container').classList.remove('hidden');
+        startQrScanner();
+      } else if (tab === 'serial') {
+        document.getElementById('tab-serial').classList.add('bg-sky-500', 'text-white', 'shadow-md');
+      }
+    }
+
+    function actualizarPreview(val) {
+      document.getElementById('id-preview').innerText = val.trim() || '546782876366';
+    }
+
+    function setPreset(url) {
+      document.getElementById('plate-url').value = url;
+    }
+
+    // 5. OPERACIONES CON BASE DE DATOS
+    async function cargarPlacas() {
+      const container = document.getElementById('plates-container');
+      const { data, error } = await supabase.from('placas').select('*').order('creado_en', { ascending: false });
+
+      if (error || !data || data.length === 0) {
+        container.innerHTML = `<div class="text-center py-8 text-slate-500 text-xs">No hay placas registradas todavía.</div>`;
+        return;
+      }
+
+      container.innerHTML = '';
+      data.forEach(p => {
+        const div = document.createElement('div');
+        div.className = "glass-card rounded-2xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4";
+        div.innerHTML = `
+          <div class="space-y-1 min-w-0 flex-1">
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-sm text-white truncate">${p.nombre}</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-sky-500/10 text-sky-400 border border-sky-500/20">ID: ${p.id}</span>
+              <span class="text-[10px] text-slate-500">• ${p.visitas || 0} visitas</span>
+            </div>
+            <div class="flex items-center gap-1.5 text-xs text-emerald-400 truncate">
+              <i data-lucide="corner-down-right" class="w-3.5 h-3.5 shrink-0"></i>
+              <span class="truncate font-mono">${p.url_destino}</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <a href="r.html?id=${p.id}" target="_blank" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1">
+              <i data-lucide="external-link" class="w-3.5 h-3.5 text-emerald-400"></i> Probar
+            </a>
+            <button onclick="editarPlaca('${p.id}', '${p.nombre}', '${p.url_destino}')" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-sky-400 rounded-xl">
+              <i data-lucide="edit-3" class="w-4 h-4"></i>
+            </button>
+            <button onclick="eliminarPlaca('${p.id}')" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-rose-400 rounded-xl">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+      lucide.createIcons();
+    }
+
+    async function guardarPlaca(e) {
+      e.preventDefault();
+      const id = document.getElementById('plate-id').value.trim();
+      const nombre = document.getElementById('plate-name').value.trim();
+      const url_destino = document.getElementById('plate-url').value.trim();
+
+      const { error } = await supabase.from('placas').upsert({ id, nombre, url_destino });
+
+      if (error) {
+        alert("Error al guardar: " + error.message);
+      } else {
+        alert("¡Placa guardada correctamente! Ahora al escanear o tocar el chip se abrirá: " + url_destino);
+        document.getElementById('plate-form').reset();
+        actualizarPreview('');
+        cargarPlacas();
+      }
+    }
+
+    async function buscarInfoExistente(id) {
+      const { data } = await supabase.from('placas').select('*').eq('id', id).single();
+      if (data) {
+        document.getElementById('plate-name').value = data.nombre;
+        document.getElementById('plate-url').value = data.url_destino;
+      }
+    }
+
+    function editarPlaca(id, nombre, url) {
+      document.getElementById('plate-id').value = id;
+      document.getElementById('plate-name').value = nombre;
+      document.getElementById('plate-url').value = url;
+      actualizarPreview(id);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function eliminarPlaca(id) {
+      if (confirm(`¿Desvincular la placa ${id}?`)) {
+        await supabase.from('placas').delete().eq('id', id);
+        cargarPlacas();
+      }
+    }
+
+    // Inicializar
+    lucide.createIcons();
+    cargarPlacas();
   </script>
 </body>
 </html>
