@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Redirigiendo... | VRPlus</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-white flex items-center justify-center min-h-screen font-sans">
+
+  <div class="text-center p-6 space-y-4 max-w-sm">
+    <div class="w-12 h-12 border-4 border-sky-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
+    <h2 class="text-lg font-bold">Conectando con VRPlus...</h2>
+    <p class="text-xs text-slate-400" id="msg">Buscando configuración de la placa...</p>
+  </div>
+
+  <script>
+    // 1. REEMPLAZA CON TUS CREDENCIALES DE SUPABASE
+    const SUPABASE_URL = "TU_SUPABASE_URL_AQUI";
+    const SUPABASE_KEY = "TU_SUPABASE_ANON_KEY_AQUI";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function ejecutarRedireccion() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+
+      if (!id) {
+        document.getElementById('msg').innerText = "Error: No se proporcionó ningún ID de placa.";
+        return;
+      }
+
+      // Consultar la base de datos
+      const { data, error } = await supabase
+        .from('placas')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error || !data) {
+        document.getElementById('msg').innerHTML = `
+          La placa <b>${id}</b> aún no ha sido configurada.<br><br>
+          <a href="inicio.html" class="inline-block px-4 py-2 bg-sky-500 rounded-lg text-xs font-bold text-white">Configurar Placa</a>
+        `;
+        return;
+      }
+
+      // Incrementar contador de visitas en segundo plano
+      await supabase.from('placas').update({ visitas: (data.visitas || 0) + 1 }).eq('id', id);
+
+      // Redirigir de inmediato al destino guardado
+      window.location.replace(data.url_destino);
+    }
+
+    ejecutarRedireccion();
+  </script>
+</body>
+</html>
