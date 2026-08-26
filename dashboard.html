@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VR+ | Panel de Control de Tags NFC</title>
+  
+  <!-- Tailwind CSS & Supabase JS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              cyan: '#00d2ff',
+              blue: '#0055ff',
+              purple: '#7928ca',
+              lime: '#65e000',
+              dark: '#0f172a'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .text-vr-gradient {
+      background: linear-gradient(135deg, #0070f3 0%, #7928ca 50%, #00d2ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+<body class="bg-[#f1f5f9] text-slate-800 font-sans antialiased min-h-screen flex flex-col selection:bg-brand-cyan selection:text-black">
+
+  <!-- Navbar Privada -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <div class="flex items-center space-x-3">
+        <a href="index.html" class="flex items-baseline font-black tracking-tighter">
+          <span class="text-2xl font-black text-vr-gradient">VR</span>
+          <span class="text-2xl font-black text-brand-lime">+</span>
+        </a>
+        <span class="bg-blue-50 text-blue-700 text-[11px] font-extrabold px-2.5 py-0.5 rounded-md border border-blue-200">PORTAL CLIENTES</span>
+      </div>
+
+      <!-- Usuario & Cerrar Sesión -->
+      <div class="flex items-center space-x-4">
+        <div class="hidden sm:flex items-center gap-2 text-xs">
+          <div class="w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center shadow-sm">
+            <i class="fa-solid fa-user"></i>
+          </div>
+          <div class="text-left">
+            <p class="font-bold text-slate-800" id="user-display">Cargando...</p>
+            <p class="text-[10px] text-slate-500">Plan VR+ Activo</p>
+          </div>
+        </div>
+        
+        <button onclick="handleLogout()" class="text-xs bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 font-bold px-3.5 py-2 rounded-xl border border-slate-200 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i> Salir
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Contenido Principal Dashboard -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-grow">
+    
+    <!-- Encabezado y Acción -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Mis Dispositivos & Tags NFC</h1>
+        <p class="text-xs sm:text-sm text-slate-500 mt-1">Administra tus redirecciones en tiempo real y consulta las métricas de toques.</p>
+      </div>
+
+      <button onclick="openNewTagModal()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold px-5 py-3 rounded-xl shadow-md shadow-blue-500/20 transition flex items-center justify-center gap-2">
+        <i class="fa-solid fa-plus"></i> Registrar Nuevo Tag NFC
+      </button>
+    </div>
+
+    <!-- MÉTRICAS -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+      
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="flex justify-between items-start">
+          <span class="text-xs font-bold text-slate-500 uppercase">Toques NFC Totales</span>
+          <span class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-sm"><i class="fa-solid fa-wifi"></i></span>
+        </div>
+        <div class="text-3xl font-black text-slate-900 mt-2" id="metric-taps">0</div>
+        <p class="text-xs text-emerald-600 mt-2 font-bold"><i class="fa-solid fa-arrow-trend-up"></i> Sincronizado en vivo</p>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="flex justify-between items-start">
+          <span class="text-xs font-bold text-slate-500 uppercase">Tags Activos</span>
+          <span class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm"><i class="fa-solid fa-tags"></i></span>
+        </div>
+        <div class="text-3xl font-black text-slate-900 mt-2" id="metric-tags-count">0</div>
+        <p class="text-xs text-slate-500 mt-2" id="metric-active-ratio">0 activos</p>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="flex justify-between items-start">
+          <span class="text-xs font-bold text-slate-500 uppercase">Reseñas Google Est.</span>
+          <span class="w-8 h-8 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center text-sm"><i class="fa-solid fa-star"></i></span>
+        </div>
+        <div class="text-3xl font-black text-slate-900 mt-2" id="metric-reviews">0</div>
+        <p class="text-xs text-slate-500 mt-2">Rating promedio: <strong class="text-slate-800">4.9 ★</strong></p>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="flex justify-between items-start">
+          <span class="text-xs font-bold text-slate-500 uppercase">Estado de Cuenta</span>
+          <span class="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-sm"><i class="fa-solid fa-shield-halved"></i></span>
+        </div>
+        <div class="text-lg font-black text-emerald-600 mt-3 flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span> Verificado
+        </div>
+        <p class="text-xs text-purple-600 mt-2 font-bold">Sin mensualidad forzosa</p>
+      </div>
+
+    </div>
+
+    <!-- TABLA DE TAGS -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50/50">
+        <div>
+          <h2 class="font-bold text-slate-900 text-sm sm:text-base">Listado de Dispositivos Registrados</h2>
+          <p class="text-xs text-slate-500">Edita la URL en la caja de texto y haz clic en "Guardar" para actualizar el destino al instante.</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs sm:text-sm">
+          <thead>
+            <tr class="border-b border-slate-200 bg-slate-100/70 text-slate-600 uppercase text-[10px] tracking-wider font-extrabold">
+              <th class="py-3 px-4">Dispositivo</th>
+              <th class="py-3 px-4">Tipo / Ubicación</th>
+              <th class="py-3 px-4">Destino Actual (URL)</th>
+              <th class="py-3 px-4">Escaneos</th>
+              <th class="py-3 px-4">Estado</th>
+              <th class="py-3 px-4 text-right">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tags-table-body" class="divide-y divide-slate-100 text-slate-700">
+            <tr>
+              <td colspan="6" class="py-8 text-center text-slate-400 text-xs">Cargando tus dispositivos NFC...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer Dashboard -->
+  <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
+    &copy; 2026 VR+ Portal Clientes · Conectado vía Supabase API.
+  </footer>
+
+  <!-- ========================================== -->
+  <!-- MODAL: REGISTRAR NUEVO TAG NFC             -->
+  <!-- ========================================== -->
+  <div id="new-tag-modal" class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 relative">
+      
+      <button onclick="closeNewTagModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-800 text-xl font-bold">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="mb-5">
+        <h3 class="text-lg font-bold text-slate-900">Registrar Nuevo Dispositivo NFC</h3>
+        <p class="text-xs text-slate-500">Vincúlalo a tu panel para monitorear toques y cambiar el enlace cuando quieras.</p>
+      </div>
+
+      <form onsubmit="handleCreateTag(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nombre / Identificador</label>
+          <input type="text" id="new-tag-name" placeholder="Ej. Placa Mostrador Principal" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tipo de Dispositivo</label>
+            <select id="new-tag-type" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+              <option value="Placa Adherible">Placa Adherible</option>
+              <option value="Tarjeta NFC">Tarjeta Portátil</option>
+              <option value="Banner Mostrador">Banner Acrílico</option>
+              <option value="Sticker NFC">Sticker NFC</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Ubicación / Sucursal</label>
+            <input type="text" id="new-tag-location" placeholder="Ej. Caja 1 - Matriz" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Enlace de Redirección (URL)</label>
+          <input type="url" id="new-tag-url" placeholder="https://g.page/r/tu-negocio/review" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+          <p class="text-[11px] text-slate-400 mt-1">Puedes colocar tu enlace de Google Maps, WhatsApp o tarjeta Wallet.</p>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-3">
+          <button type="button" onclick="closeNewTagModal()" class="px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+            Cancelar
+          </button>
+          <button type="submit" id="save-tag-btn" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-md shadow-blue-500/20 transition">
+            Guardar Tag
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- Lógica de Supabase y Gestión de Tags -->
+  <script>
+    const SUPABASE_URL = 'https://tnfujiajzzicbzdoutvd.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_ePfSCkCTypFz7dSvRc3New_asdhyac0';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let currentUser = null;
+    let tagsList = [];
+
+    // Validar autenticación activa
+    async function initDashboard() {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (!session || error) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      currentUser = session.user;
+      document.getElementById('user-display').innerText = currentUser.email.split('@')[0].toUpperCase();
+      
+      await loadTags();
+    }
+
+    // Cargar tags desde Supabase
+    async function loadTags() {
+      try {
+        const { data, error } = await supabase
+          .from('tags')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        tagsList = data || [];
+        renderTagsTable();
+      } catch (err) {
+        alert('Error al cargar tags: ' + err.message);
+      }
+    }
+
+    // Renderizar la tabla de Tags
+    function renderTagsTable() {
+      const tbody = document.getElementById('tags-table-body');
+      tbody.innerHTML = '';
+
+      if (tagsList.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="py-12 text-center text-slate-500">
+              <i class="fa-solid fa-tags text-3xl text-slate-300 mb-2 block"></i>
+              No tienes ningún tag registrado todavía.<br>
+              <button onclick="openNewTagModal()" class="mt-3 text-blue-600 font-bold hover:underline text-xs">
+                + Registrar mi primer dispositivo
+              </button>
+            </td>
+          </tr>
+        `;
+        updateMetrics();
+        return;
+      }
+
+      tagsList.forEach(tag => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50/80 transition";
+        tr.innerHTML = `
+          <td class="py-3.5 px-4 font-bold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-nfc-symbol text-blue-600 text-base"></i> ${tag.name}
+          </td>
+          <td class="py-3.5 px-4 text-xs text-slate-500">
+            <span class="font-medium text-slate-700">${tag.type}</span><br>
+            <span class="text-[11px] text-slate-400">${tag.location}</span>
+          </td>
+          <td class="py-3.5 px-4">
+            <div class="flex items-center gap-2">
+              <input type="url" id="url-input-${tag.id}" value="${tag.url}" class="bg-slate-50 border border-slate-200 text-xs px-2.5 py-1.5 rounded-lg w-full max-w-xs focus:ring-1 focus:ring-blue-500 text-blue-700 font-mono">
+              <button onclick="saveUpdatedUrl('${tag.id}')" class="bg-slate-800 hover:bg-blue-600 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition" title="Guardar nueva URL">
+                Guardar
+              </button>
+            </div>
+          </td>
+          <td class="py-3.5 px-4 font-bold text-slate-800">
+            ${(tag.scans || 0).toLocaleString()}
+          </td>
+          <td class="py-3.5 px-4">
+            <button onclick="toggleTagStatus('${tag.id}', ${tag.active})" class="text-[11px] font-extrabold px-2.5 py-1 rounded-full border ${tag.active ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-400 border-slate-200'}">
+              ${tag.active ? '● Activo' : '○ Pausado'}
+            </button>
+          </td>
+          <td class="py-3.5 px-4 text-right">
+            <button onclick="deleteTag('${tag.id}')" class="text-slate-400 hover:text-red-600 transition p-1.5" title="Eliminar Tag">
+              <i class="fa-regular fa-trash-can text-sm"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      updateMetrics();
+    }
+
+    // Actualizar tarjetas de métricas
+    function updateMetrics() {
+      const totalTags = tagsList.length;
+      const activeTags = tagsList.filter(t => t.active).length;
+      const totalScans = tagsList.reduce((acc, curr) => acc + (curr.scans || 0), 0);
+      const estReviews = Math.floor(totalScans * 0.12); // Estimación del 12% de conversión
+
+      document.getElementById('metric-tags-count').innerText = totalTags;
+      document.getElementById('metric-active-ratio').innerText = `${activeTags} activos de ${totalTags}`;
+      document.getElementById('metric-taps').innerText = totalScans.toLocaleString();
+      document.getElementById('metric-reviews').innerText = estReviews.toLocaleString();
+    }
+
+    // Crear Tag en Supabase
+    async function handleCreateTag(e) {
+      e.preventDefault();
+      const saveBtn = document.getElementById('save-tag-btn');
+      saveBtn.disabled = true;
+      saveBtn.innerText = 'Guardando...';
+
+      const name = document.getElementById('new-tag-name').value;
+      const type = document.getElementById('new-tag-type').value;
+      const location = document.getElementById('new-tag-location').value;
+      const url = document.getElementById('new-tag-url').value;
+
+      try {
+        const { error } = await supabase.from('tags').insert([
+          {
+            user_id: currentUser.id,
+            name,
+            type,
+            location,
+            url,
+            scans: 0,
+            active: true
+          }
+        ]);
+
+        if (error) throw error;
+
+        closeNewTagModal();
+        document.getElementById('new-tag-name').value = '';
+        document.getElementById('new-tag-location').value = '';
+        document.getElementById('new-tag-url').value = '';
+        
+        await loadTags();
+      } catch (err) {
+        alert('Error al crear tag: ' + err.message);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerText = 'Guardar Tag';
+      }
+    }
+
+    // Actualizar URL
+    async function saveUpdatedUrl(tagId) {
+      const input = document.getElementById(`url-input-${tagId}`);
+      const newUrl = input.value;
+
+      try {
+        const { error } = await supabase
+          .from('tags')
+          .update({ url: newUrl })
+          .eq('id', tagId);
+
+        if (error) throw error;
+        alert('¡Destino del Tag actualizado correctamente!');
+        await loadTags();
+      } catch (err) {
+        alert('Error al actualizar: ' + err.message);
+      }
+    }
+
+    // Cambiar estado activo/pausado
+    async function toggleTagStatus(tagId, currentStatus) {
+      try {
+        const { error } = await supabase
+          .from('tags')
+          .update({ active: !currentStatus })
+          .eq('id', tagId);
+
+        if (error) throw error;
+        await loadTags();
+      } catch (err) {
+        alert('Error al cambiar estado: ' + err.message);
+      }
+    }
+
+    // Eliminar Tag
+    async function deleteTag(tagId) {
+      if (confirm('¿Seguro que deseas eliminar este dispositivo?')) {
+        try {
+          const { error } = await supabase
+            .from('tags')
+            .delete()
+            .eq('id', tagId);
+
+          if (error) throw error;
+          await loadTags();
+        } catch (err) {
+          alert('Error al eliminar: ' + err.message);
+        }
+      }
+    }
+
+    // Cerrar Sesión
+    async function handleLogout() {
+      await supabase.auth.signOut();
+      window.location.href = 'index.html';
+    }
+
+    // Modales
+    function openNewTagModal() {
+      document.getElementById('new-tag-modal').classList.remove('hidden');
+    }
+    function closeNewTagModal() {
+      document.getElementById('new-tag-modal').classList.add('hidden');
+    }
+
+    // Iniciar
+    initDashboard();
+  </script>
+</body>
+</html>
