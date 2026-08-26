@@ -279,10 +279,10 @@
       <form id="form-placa" class="space-y-4">
         <div>
           <label class="block text-xs font-bold text-slate-700 uppercase mb-1">ID / Serial de la Placa</label>
-          <input type="text" id="input-id" required placeholder="Ej. 546782876366" 
+          <input type="text" id="input-id" required placeholder="Ej. O4E268D2AZ1190" 
             class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm font-mono font-bold text-emerald-600 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500">
           <p class="text-[11px] text-slate-500 mt-1">
-            Enlace grabado: <span class="font-mono text-blue-600 font-semibold">.../r.html?id=<span id="lbl-id-preview">546782876366</span></span>
+            Enlace grabado: <span class="font-mono text-blue-600 font-semibold">.../r.html?id=<span id="lbl-id-preview">O4E268D2AZ1190</span></span>
           </p>
         </div>
 
@@ -360,6 +360,32 @@
     const viewQr = document.getElementById('view-qr');
     const inputId = document.getElementById('input-id');
     const lblPreview = document.getElementById('lbl-id-preview');
+
+    // Función universal para extraer solo el ID limpio
+    function extraerIdLimpio(texto) {
+      if (!texto) return "";
+      let str = texto.trim();
+      
+      // Si contiene el parámetro id= (ej: https://.../r.html?id=O4E268D2AZ1190)
+      if (str.includes("id=")) {
+        try {
+          const urlObj = new URL(str.startsWith("http") ? str : "https://" + str);
+          const paramId = urlObj.searchParams.get("id");
+          if (paramId) return paramId.trim();
+        } catch(e) {
+          const splitId = str.split("id=")[1];
+          if (splitId) return splitId.split("&")[0].split("#")[0].trim();
+        }
+      }
+      
+      // Si es una URL sin parámetro pero termina con el ID
+      if (str.includes("/")) {
+        const partes = str.split("/").filter(p => p.trim() !== "");
+        return partes[partes.length - 1].split("?")[0].trim();
+      }
+      
+      return str;
+    }
 
     async function initDashboard() {
       if (!supabaseClient) {
@@ -447,12 +473,23 @@
     tabSerial.addEventListener('click', () => activarTab('serial'));
     document.getElementById('btn-cerrar-qr').addEventListener('click', () => activarTab('serial'));
 
+    // Actualización y normalización al escribir/pegar manualmente
     function actualizarLabelId() {
-      const val = inputId.value.trim();
-      lblPreview.textContent = val !== '' ? val : '546782876366';
+      const clean = extraerIdLimpio(inputId.value);
+      if (inputId.value !== clean && clean !== "") {
+        inputId.value = clean;
+      }
+      lblPreview.textContent = clean !== '' ? clean : 'O4E268D2AZ1190';
     }
+
     inputId.addEventListener('input', actualizarLabelId);
     inputId.addEventListener('keyup', actualizarLabelId);
+    inputId.addEventListener('paste', () => {
+      setTimeout(() => {
+        actualizarLabelId();
+        buscarExistente(inputId.value.trim());
+      }, 50);
+    });
     inputId.addEventListener('change', () => {
       actualizarLabelId();
       buscarExistente(inputId.value.trim());
@@ -476,19 +513,11 @@
           { facingMode: "environment" },
           { fps: 10, qrbox: { width: 220, height: 220 } },
           (decodedText) => {
-            let cleanId = decodedText;
-            if (decodedText.includes('id=')) {
-              try {
-                const u = new URL(decodedText.startsWith('http') ? decodedText : 'https://' + decodedText);
-                cleanId = u.searchParams.get('id') || decodedText;
-              } catch(e) {}
-            } else if (decodedText.includes('/')) {
-              cleanId = decodedText.split('/').pop();
-            }
+            const cleanId = extraerIdLimpio(decodedText)[cite: 1];
             inputId.value = cleanId;
             actualizarLabelId();
             activarTab('serial');
-            buscarExistente(cleanId);
+            buscarExistente(cleanId)[cite: 1];
           },
           () => {}
         ).catch(err => {
@@ -511,7 +540,7 @@
         try {
           const ndef = new NDEFReader();
           await ndef.scan();
-          statusNfc.innerHTML = "<span class='text-emerald-400 font-semibold animate-pulse'>¡Leyendo! Acerca la placa a la parte trasera...</span>";
+          statusNfc.innerHTML = "<span class='text-emerald-400 font-semibold animate-pulse'>¡Leyendo! Acerca la placa a la parte trasera...</span>"[cite: 1];
           ndef.onreading = event => {
             let extractedId = "";
             if (event.message && event.message.records) {
@@ -519,12 +548,8 @@
                 try {
                   const textDecoder = new TextDecoder(record.encoding || 'utf-8');
                   const contenido = textDecoder.decode(record.data);
-                  if (contenido.includes("id=")) {
-                    const u = new URL(contenido.startsWith('http') ? contenido : 'https://' + contenido);
-                    extractedId = u.searchParams.get('id');
-                  } else if (contenido.length > 3) {
-                    extractedId = contenido.trim();
-                  }
+                  const clean = extraerIdLimpio(contenido);
+                  if (clean) extractedId = clean;
                 } catch(e) {}
               }
             }
@@ -534,15 +559,15 @@
             if (extractedId) {
               inputId.value = extractedId;
               actualizarLabelId();
-              buscarExistente(extractedId);
-              statusNfc.innerHTML = `<span class='text-emerald-400 font-bold'>✓ Placa detectada: ${extractedId}</span>`;
+              buscarExistente(extractedId)[cite: 1];
+              statusNfc.innerHTML = `<span class='text-emerald-400 font-bold'>✓ Placa detectada: ${extractedId}</span>`[cite: 1];
             }
           };
         } catch(err) {
-          statusNfc.innerHTML = `<span class='text-rose-400'>Error: ${err.message}</span>`;
+          statusNfc.innerHTML = `<span class='text-rose-400'>Error: ${err.message}</span>`[cite: 1];
         }
       } else {
-        statusNfc.innerHTML = "<span class='text-amber-400'>Web NFC requiere Chrome en Android. En PC usa 'Manual' o 'Cámara QR'.</span>";
+        statusNfc.innerHTML = "<span class='text-amber-400'>Web NFC requiere Chrome en Android. En PC usa 'Manual' o 'Cámara QR'.</span>"[cite: 1];
       }
     });
 
@@ -575,7 +600,7 @@
       btn.disabled = true;
       btn.innerText = "Guardando...";
 
-      const id = inputId.value.trim();
+      const id = extraerIdLimpio(inputId.value);
       const nombre = document.getElementById('input-nombre').value.trim();
       const url_destino = document.getElementById('input-url').value.trim();
       const business_id = document.getElementById('select-business-id').value || null;
