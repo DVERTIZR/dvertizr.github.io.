@@ -69,7 +69,7 @@
 
           if (!error && data && data.url_destino) {
             urlDestino = data.url_destino;
-            // Incrementar contador de visitas en segundo plano sin esperar
+            // Incrementar contador de visitas en segundo plano
             supabaseClient.from('placas').update({ visitas: (data.visitas || 0) + 1 }).eq('id', id.trim()).then(() => {});
           }
         } catch (err) {
@@ -90,7 +90,6 @@
       if (urlDestino) {
         msgEl.innerHTML = `Redirigiendo a <span class="text-sky-400 font-mono">${urlDestino}</span>...`;
         
-        // Asegurar que la URL tenga protocolo http:// o https://
         let finalUrl = urlDestino.trim();
         if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
           finalUrl = 'https://' + finalUrl;
@@ -104,8 +103,8 @@
         titleEl.innerText = "Placa sin configurar";
         msgEl.innerHTML = `
           La placa con ID <b class="text-sky-400 font-mono">${id}</b> aún no tiene un destino asignado.<br><br>
-          <a href="portal_vrplus_adaptado.html" class="inline-block px-5 py-2.5 bg-sky-500 hover:bg-sky-400 rounded-xl text-xs font-bold text-white transition shadow-lg shadow-sky-500/25">
-            Configurar Placa Ahora
+          <a href="dashboard.html" class="inline-block px-5 py-2.5 bg-sky-500 hover:bg-sky-400 rounded-xl text-xs font-bold text-white transition shadow-lg shadow-sky-500/25">
+            Configurar Placa en Panel
           </a>
         `;
       }
