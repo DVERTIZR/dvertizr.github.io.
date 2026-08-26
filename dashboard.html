@@ -52,12 +52,8 @@
 </head>
 <body class="bg-[#f8fafc] text-slate-800 font-sans antialiased min-h-screen flex selection:bg-brand-cyan selection:text-black">
 
-  <!-- ======================================================== -->
-  <!-- BARRA LATERAL IZQUIERDA (SIDEBAR)                        -->
-  <!-- ======================================================== -->
+  <!-- BARRA LATERAL IZQUIERDA -->
   <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 min-h-screen border-r border-slate-800">
-    
-    <!-- Logo VR+ -->
     <div class="h-20 flex items-center px-6 border-b border-slate-800">
       <a href="./inicio_test.html" class="flex items-center space-x-2">
         <span class="text-2xl font-black text-vr-gradient tracking-tight">VR</span>
@@ -66,10 +62,7 @@
       </a>
     </div>
 
-    <!-- Menú Lateral -->
     <nav class="flex-1 px-4 py-6 space-y-6 overflow-y-auto">
-      
-      <!-- 1. GENERAL -->
       <div>
         <button onclick="setView('general')" id="nav-general" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 shadow-sm transition cursor-pointer">
           <i class="fa-solid fa-chart-pie text-sm"></i>
@@ -77,7 +70,6 @@
         </button>
       </div>
 
-      <!-- 2. MIS NEGOCIOS -->
       <div>
         <div class="flex items-center justify-between px-3 text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-2">
           <span>Mis Negocios</span>
@@ -92,7 +84,6 @@
         </button>
       </div>
 
-      <!-- 3. PERSONALES -->
       <div>
         <div class="flex items-center justify-between px-3 text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-2">
           <span>Tags Personales</span>
@@ -103,10 +94,8 @@
           <span>Tags Personales</span>
         </button>
       </div>
-
     </nav>
 
-    <!-- Footer Sidebar con Logout -->
     <div class="p-4 border-t border-slate-800 bg-slate-950/60">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2 overflow-hidden">
@@ -123,15 +112,10 @@
         </button>
       </div>
     </div>
-
   </aside>
 
-  <!-- ======================================================== -->
-  <!-- CONTENIDO PRINCIPAL DINÁMICO                             -->
-  <!-- ======================================================== -->
+  <!-- CONTENIDO PRINCIPAL -->
   <div class="flex-1 flex flex-col min-w-0">
-    
-    <!-- Topbar Header -->
     <header class="h-20 bg-white border-b border-slate-200 px-8 flex items-center justify-between sticky top-0 z-20">
       <div>
         <h1 class="text-xl sm:text-2xl font-black text-slate-900" id="main-view-title">Vista General</h1>
@@ -141,8 +125,6 @@
     </header>
 
     <main class="p-8 flex-1 overflow-y-auto">
-      
-      <!-- INDICADORES / KPI CARDS -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
           <div class="flex justify-between items-start">
@@ -213,14 +195,10 @@
           </table>
         </div>
       </div>
-
     </main>
   </div>
 
-
-  <!-- ======================================================== -->
-  <!-- MODAL: AGREGAR NEGOCIO                                   -->
-  <!-- ======================================================== -->
+  <!-- MODAL: AGREGAR NEGOCIO -->
   <div id="modal-business" class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-200 relative">
       <button onclick="closeNewBusinessModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-800 text-xl font-bold cursor-pointer">
@@ -249,10 +227,7 @@
     </div>
   </div>
 
-
-  <!-- ======================================================== -->
-  <!-- MODAL COMPLETO: VINCULAR PLACA (NFC + QR + MANUAL)       -->
-  <!-- ======================================================== -->
+  <!-- MODAL: VINCULAR PLACA -->
   <div id="modal-tag" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-200 relative max-h-[92vh] overflow-y-auto">
       
@@ -265,7 +240,6 @@
         <p class="text-xs text-slate-500 mt-1">Elige cómo deseas detectar el serial de la placa:</p>
       </div>
 
-      <!-- SELECTOR DE PESTAÑAS (NFC / QR / MANUAL) -->
       <div class="grid grid-cols-3 gap-2 p-1 bg-slate-100 rounded-2xl border border-slate-200 mb-4">
         <button id="btn-tab-nfc" type="button" class="py-2.5 px-2 text-xs font-bold rounded-xl transition bg-blue-600 text-white shadow-md cursor-pointer">
           <i class="fa-solid fa-nfc-symbol mr-1"></i> Leer NFC
@@ -278,7 +252,6 @@
         </button>
       </div>
 
-      <!-- SECCIÓN NFC -->
       <div id="view-nfc" class="bg-slate-900 p-6 rounded-2xl border border-slate-800 text-center space-y-3 mb-4 text-white">
         <div class="relative w-16 h-16 mx-auto flex items-center justify-center">
           <div class="absolute inset-0 rounded-full bg-cyan-500/20 nfc-ring"></div>
@@ -295,7 +268,6 @@
         </button>
       </div>
 
-      <!-- SECCIÓN CÁMARA QR -->
       <div id="view-qr" style="display: none;" class="bg-slate-900 p-4 rounded-2xl border border-slate-800 text-center space-y-3 mb-4 text-white">
         <div id="qr-reader" style="width: 100%; min-height: 240px; background: #000; border-radius: 0.75rem;" class="overflow-hidden"></div>
         <p class="text-xs text-slate-400" id="qr-status">Apunta la cámara al código QR impreso en la placa.</p>
@@ -304,7 +276,6 @@
         </button>
       </div>
 
-      <!-- FORMULARIO DE PLACA -->
       <form id="form-placa" class="space-y-4">
         <div>
           <label class="block text-xs font-bold text-slate-700 uppercase mb-1">ID / Serial de la Placa</label>
@@ -339,7 +310,6 @@
           <input type="url" id="input-url" required placeholder="https://g.page/r/tu-negocio/review" 
             class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
           
-          <!-- Presets Rápidos -->
           <div class="flex flex-wrap gap-2 mt-2">
             <button type="button" onclick="setPreset('https://g.page/r/tu-negocio/review')" class="text-[11px] font-semibold px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 transition cursor-pointer">
               <i class="fa-brands fa-google text-blue-600 mr-1"></i> Google Reviews
@@ -364,12 +334,7 @@
     </div>
   </div>
 
-
-  <!-- ======================================================== -->
-  <!-- LÓGICA Y CONTROL SUPABASE + HARDWARE NFC/QR              -->
-  <!-- ======================================================== -->
   <script>
-    // 1. CONFIGURACIÓN SUPABASE
     const SUPABASE_URL = "https://tnfujiajzzicbzdoutvd.supabase.co";
     const SUPABASE_KEY = "sb_publishable_ePfSCkCTypFz7dSvRc3New_asdhyac0";
     
@@ -388,7 +353,6 @@
     let currentView = 'general';
     let qrScannerInstance = null;
 
-    // Elementos UI del Modal
     const tabNfc = document.getElementById('btn-tab-nfc');
     const tabQr = document.getElementById('btn-tab-qr');
     const tabSerial = document.getElementById('btn-tab-serial');
@@ -397,7 +361,6 @@
     const inputId = document.getElementById('input-id');
     const lblPreview = document.getElementById('lbl-id-preview');
 
-    // 2. INICIALIZACIÓN
     async function initDashboard() {
       if (!supabaseClient) {
         alert("Error al conectar con la base de datos.");
@@ -416,7 +379,6 @@
       await loadData();
     }
 
-    // 3. CARGA DE DATOS (Supabase con fallback en LocalStorage)
     function obtenerPlacasLocales() {
       try {
         return JSON.parse(localStorage.getItem('vrplus_placas')) || [];
@@ -429,14 +391,12 @@
 
     async function loadData() {
       try {
-        // Cargar Negocios
         const { data: bData } = await supabaseClient
           .from('businesses')
           .select('*')
           .order('created_at', { ascending: true });
         businesses = bData || [];
 
-        // Cargar Placas
         const { data: tData, error: tErr } = await supabaseClient
           .from('placas')
           .select('*')
@@ -444,7 +404,7 @@
 
         if (!tErr && tData) {
           tags = tData;
-          guardarPlacasLocales(tData); // Sincroniza en local
+          guardarPlacasLocales(tData);
         } else {
           tags = obtenerPlacasLocales();
         }
@@ -452,14 +412,12 @@
         renderSidebarBusinesses();
         renderView();
       } catch (err) {
-        console.warn("Fallback a local:", err);
         tags = obtenerPlacasLocales();
         renderSidebarBusinesses();
         renderView();
       }
     }
 
-    // 4. CONTROL DE PESTAÑAS (NFC / QR / MANUAL)
     function activarTab(tab) {
       const activeClass = "py-2.5 px-2 text-xs font-bold rounded-xl transition bg-blue-600 text-white shadow-md cursor-pointer";
       const inactiveClass = "py-2.5 px-2 text-xs font-bold rounded-xl transition text-slate-500 hover:text-slate-900 cursor-pointer";
@@ -489,7 +447,6 @@
     tabSerial.addEventListener('click', () => activarTab('serial'));
     document.getElementById('btn-cerrar-qr').addEventListener('click', () => activarTab('serial'));
 
-    // Actualización de preview de Serial en vivo
     function actualizarLabelId() {
       const val = inputId.value.trim();
       lblPreview.textContent = val !== '' ? val : '546782876366';
@@ -505,7 +462,6 @@
       document.getElementById('input-url').value = url;
     }
 
-    // 5. ESCÁNER QR POR CÁMARA
     function iniciarCamara() {
       const statusEl = document.getElementById('qr-status');
       try {
@@ -549,7 +505,6 @@
       }
     }
 
-    // 6. LECTOR NFC
     document.getElementById('btn-activa-nfc').addEventListener('click', async () => {
       const statusNfc = document.getElementById('nfc-status');
       if ("NDEFReader" in window) {
@@ -591,7 +546,6 @@
       }
     });
 
-    // 7. BÚSQUEDA DE PLACA EXISTENTE PARA AUTOCOMPLETAR
     async function buscarExistente(id) {
       if (!id) return;
       let encontrada = obtenerPlacasLocales().find(x => x.id === id);
@@ -615,7 +569,6 @@
       }
     }
 
-    // 8. GUARDAR PLACA (SUPABASE + LOCALSTORAGE)
     document.getElementById('form-placa').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('btn-submit-placa');
@@ -638,12 +591,9 @@
             ubicacion: ubicacion,
             url_destino: url_destino
           });
-        } catch(err) {
-          console.warn("Error guardando en Supabase:", err);
-        }
+        } catch(err) {}
       }
 
-      // Guardar en LocalStorage
       let locales = obtenerPlacasLocales();
       const idx = locales.findIndex(x => x.id === id);
       if (idx >= 0) {
@@ -660,7 +610,6 @@
       btn.innerText = "Guardar y Activar Redirección";
     });
 
-    // 9. RENDERIZACIÓN DE VISTAS Y TABLAS
     function renderSidebarBusinesses() {
       const container = document.getElementById('sidebar-businesses-list');
       container.innerHTML = '';
@@ -820,10 +769,10 @@
             <a href="r.html?id=${t.id}" target="_blank" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold inline-block" title="Probar redirección">
               Probar ↗
             </a>
-            <button onclick="editarPlaca('${t.id}', '${t.nombre}', '${t.url_destino}', '${t.business_id || ''}', '${t.ubicacion || ''}')" class="text-blue-600 hover:text-blue-800 p-1.5" title="Editar datos">
+            <button onclick="editarPlaca('${t.id}', '${t.nombre}', '${t.url_destino}', '${t.business_id || ''}', '${t.ubicacion || ''}')" class="text-blue-600 hover:text-blue-800 p-1.5 cursor-pointer" title="Editar datos">
               <i class="fa-solid fa-pen-to-square"></i>
             </button>
-            <button onclick="deleteTag('${t.id}')" class="text-slate-400 hover:text-red-600 p-1.5" title="Eliminar placa">
+            <button onclick="deleteTag('${t.id}')" class="text-slate-400 hover:text-red-600 p-1.5 cursor-pointer" title="Eliminar placa">
               <i class="fa-regular fa-trash-can"></i>
             </button>
           </td>
@@ -832,7 +781,6 @@
       });
     }
 
-    // 10. EDICIÓN RÁPIDA DE URL
     async function saveUpdatedUrl(tagId) {
       const newUrl = document.getElementById(`url-input-${tagId}`).value.trim();
       if (!newUrl) return;
@@ -852,7 +800,6 @@
       await loadData();
     }
 
-    // 11. MODAL DE NEGOCIOS
     function openNewBusinessModal() { document.getElementById('modal-business').classList.remove('hidden'); }
     function closeNewBusinessModal() { document.getElementById('modal-business').classList.add('hidden'); }
 
@@ -883,7 +830,6 @@
       }
     }
 
-    // 12. MODAL DE TAGS
     function openNewTagModal(preselectedBusinessId = undefined) {
       const select = document.getElementById('select-business-id');
       select.innerHTML = '<option value="">Personal (Sin Negocio)</option>';
@@ -903,7 +849,6 @@
         select.value = "";
       }
 
-      // Reset Form
       document.getElementById('form-placa').reset();
       actualizarLabelId();
       activarTab('nfc');
@@ -926,7 +871,6 @@
       activarTab('serial');
     };
 
-    // 13. ELIMINAR PLACA
     async function deleteTag(tagId) {
       if (confirm(`¿Seguro que deseas eliminar la placa #${tagId}?`)) {
         if (supabaseClient) {
@@ -938,7 +882,6 @@
       }
     }
 
-    // 14. LOGOUT
     async function handleLogout() {
       if (supabaseClient) {
         try { await supabaseClient.auth.signOut(); } catch (err) {}
@@ -946,7 +889,6 @@
       window.location.href = './inicio_test.html';
     }
 
-    // Iniciar Dashboard
     initDashboard();
   </script>
 </body>
