@@ -50,9 +50,9 @@
   <!-- ======================================================== -->
   <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 min-h-screen border-r border-slate-800">
     
-    <!-- Logo VR+ -->
+    <!-- Logo VR+ hacia inicio_test.html -->
     <div class="h-20 flex items-center px-6 border-b border-slate-800">
-      <a href="./index.html" class="flex items-center space-x-2">
+      <a href="./inicio_test.html" class="flex items-center space-x-2">
         <span class="text-2xl font-black text-vr-gradient tracking-tight">VR</span>
         <span class="text-2xl font-black text-brand-lime">+</span>
         <span class="text-[10px] uppercase tracking-widest text-slate-400 font-bold ml-2 border-l border-slate-700 pl-2">Portal</span>
@@ -64,7 +64,7 @@
       
       <!-- 1. GENERAL -->
       <div>
-        <button onclick="setView('general')" id="nav-general" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 shadow-sm transition">
+        <button onclick="setView('general')" id="nav-general" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 shadow-sm transition cursor-pointer">
           <i class="fa-solid fa-chart-pie text-sm"></i>
           <span>General</span>
         </button>
@@ -83,7 +83,7 @@
         </div>
 
         <!-- Botón Agregar Negocio -->
-        <button onclick="openNewBusinessModal()" class="mt-2 w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-cyan-400 hover:bg-slate-800 transition">
+        <button onclick="openNewBusinessModal()" class="mt-2 w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-cyan-400 hover:bg-slate-800 transition cursor-pointer">
           <i class="fa-solid fa-circle-plus"></i>
           <span>+ Agregar Negocio</span>
         </button>
@@ -95,7 +95,7 @@
           <span>Tags Personales</span>
           <i class="fa-solid fa-user-tag text-xs"></i>
         </div>
-        <button onclick="setView('personal')" id="nav-personal" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800 transition">
+        <button onclick="setView('personal')" id="nav-personal" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800 transition cursor-pointer">
           <i class="fa-solid fa-address-card text-sm"></i>
           <span>Tags Personales</span>
         </button>
@@ -115,7 +115,7 @@
             <p class="text-[10px] text-slate-400">Cuenta VR+</p>
           </div>
         </div>
-        <button onclick="handleLogout()" class="text-slate-400 hover:text-red-400 p-1.5 rounded-lg hover:bg-slate-800 transition" title="Cerrar Sesión">
+        <button onclick="handleLogout()" class="text-slate-400 hover:text-red-400 p-1.5 rounded-lg hover:bg-slate-800 transition cursor-pointer" title="Cerrar Sesión">
           <i class="fa-solid fa-arrow-right-from-bracket"></i>
         </button>
       </div>
@@ -354,7 +354,7 @@
       const { data: { session }, error } = await supabaseClient.auth.getSession();
       
       if (!session || error) {
-        window.location.href = './index.html';
+        window.location.href = './inicio_test.html';
         return;
       }
 
@@ -408,7 +408,7 @@
       businesses.forEach(b => {
         const btn = document.createElement('button');
         const isActive = currentView === `business_${b.id}`;
-        btn.className = `w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition ${
+        btn.className = `w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition cursor-pointer ${
           isActive ? 'text-white bg-slate-800 border-l-2 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
         }`;
         btn.onclick = () => setView(`business_${b.id}`);
@@ -434,14 +434,14 @@
       const navPersonal = document.getElementById('nav-personal');
 
       if (viewName === 'general') {
-        navGeneral.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 shadow-sm transition";
-        navPersonal.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800 transition";
+        navGeneral.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 shadow-sm transition cursor-pointer";
+        navPersonal.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800 transition cursor-pointer";
       } else if (viewName === 'personal') {
-        navGeneral.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800 transition";
-        navPersonal.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 shadow-sm transition";
+        navGeneral.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800 transition cursor-pointer";
+        navPersonal.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 shadow-sm transition cursor-pointer";
       } else {
-        navGeneral.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800 transition";
-        navPersonal.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800 transition";
+        navGeneral.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800 transition cursor-pointer";
+        navPersonal.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800 transition cursor-pointer";
       }
 
       renderSidebarBusinesses();
@@ -522,7 +522,7 @@
             <td colspan="6" class="py-12 text-center text-slate-400 text-xs">
               <i class="fa-solid fa-tags text-3xl text-slate-300 mb-2 block"></i>
               No hay ningún tag registrado en esta sección.<br>
-              <button onclick="openNewTagModal()" class="mt-2 text-blue-600 font-bold hover:underline">
+              <button onclick="openNewTagModal()" class="mt-2 text-blue-600 font-bold hover:underline cursor-pointer">
                 + Agregar dispositivo ahora
               </button>
             </td>
@@ -721,7 +721,7 @@
           if (error) throw error;
           await loadData();
         } catch (err) {
-          alert("Error: " + err.message);
+          alert("Error al eliminar: " + err.message);
         }
       }
     }
@@ -729,9 +729,13 @@
     // Cerrar Sesión
     async function handleLogout() {
       if (supabaseClient) {
-        await supabaseClient.auth.signOut();
+        try {
+          await supabaseClient.auth.signOut();
+        } catch (err) {
+          console.warn("Error al cerrar sesión:", err);
+        }
       }
-      window.location.href = './index.html';
+      window.location.href = './inicio_test.html';
     }
 
     // Iniciar
